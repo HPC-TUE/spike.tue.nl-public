@@ -1,0 +1,22 @@
+---
+title: Experiment tracking
+description: Use tracking services without putting credentials or sensitive data into images and logs.
+audience: Researchers
+maturity: Experimental
+lastVerified: 2026-07-14
+products: [Run:ai, Weights & Biases]
+sourceRefs: [Run-ai-accelerate-example, wandb-slurm-sweep]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+
+<DocMeta maturity="Experimental" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai', 'Weights & Biases']} />
+
+Configure experiment tracking through the approved secret mechanism. Keep
+tokens out of Containerfiles, command lines, source control, and captured logs.
+
+Record the Run:ai project, image tag, workload name, code revision, dataset
+version, and tracking run identifier together so a result can be reproduced.
+External scheduler examples in the source material are Historical; translate
+them to a Run:ai workload rather than copying their commands.

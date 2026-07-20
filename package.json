@@ -1,0 +1,41 @@
+{
+  "name": "spike-public-github-pages",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check:terminology": "bash scripts/check-published-terminology.sh .",
+    "check:metadata": "node scripts/check-content-metadata.mjs .",
+    "check:redirects": "node scripts/check-redirects.mjs .",
+    "check:routes": "node scripts/check-built-routes.mjs .",
+    "check:built-links": "node scripts/check-built-links.mjs .",
+    "check:deployment-boundaries": "node scripts/check-local-boundaries.mjs .",
+    "check:links": "node scripts/check-doc-links.mjs .",
+    "check:assets": "node scripts/check-local-assets.mjs .",
+    "check:a11y-static": "node scripts/check-static-a11y.mjs .",
+    "check:design-tokens": "node scripts/check-local-design.mjs .",
+    "check:responsive": "node scripts/check-local-design.mjs .",
+    "check:http": "node scripts/check-built-http.mjs .",
+    "check:staging-workflow": "node scripts/check-staging-workflow.mjs .",
+    "check:ci-workflows": "node scripts/check-local-ci.mjs .",
+    "check:external-links": "node scripts/check-external-links.mjs .",
+    "test:push-script": "bash scripts/test-push-to-harbor.sh",
+    "verify": "npm run build && npm run check:terminology && npm run check:metadata && npm run check:redirects && npm run check:routes && npm run check:built-links && npm run check:http && npm run check:staging-workflow && npm run check:ci-workflows && npm run check:deployment-boundaries && npm run check:links && npm run check:assets && npm run check:a11y-static && npm run check:design-tokens && npm run check:responsive && npm run test:push-script",
+    "verify:release": "npm run verify && npm run check:external-links"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "latest",
+    "astro": "latest"
+  },
+  "devDependencies": {
+    "@astrojs/check": "latest",
+    "typescript": "latest"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

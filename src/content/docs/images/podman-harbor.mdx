@@ -1,0 +1,67 @@
+---
+title: Build and publish images with Podman
+description: Create a reproducible Containerfile, build it with Podman, and publish it to Harbor.
+audience: Researchers
+maturity: Verified
+lastVerified: 2026-07-14
+products: [Podman, Harbor]
+sourceRefs: [container, account-setup-guide-harbor-spike]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="Researchers" products={['Podman', 'Harbor']} />
+
+Use Podman to create images that are reproducible, project-scoped, and easy to
+trace. Choose a CUDA base image that matches your workload requirements, install
+only the required dependencies, and run the application as a non-root user.
+
+## A minimal Containerfile
+
+```text
+FROM nvcr.io/nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+RUN useradd --create-home --uid 10001 researcher
+WORKDIR /workspace
+COPY requirements.txt .
+RUN apt-get update && apt-get install -y --no-install-recommends python3-pip \\
+  && pip3 install --no-cache-dir -r requirements.txt \\
+  && rm -rf /var/lib/apt/lists/*
+COPY --chown=researcher:researcher . .
+USER researcher
+CMD ["python3", "train.py"]
+```
+
+Do not place registry passwords, model tokens, or private keys in the image,
+the Containerfile, or source control. Provide them through the approved runtime
+secret mechanism instead.
+
+## Build and push
+
+1. Sign in interactively: `podman login harbor.spike.tue.nl`.
+2. Download [the canonical build-and-push script](/downloads/push-to-harbor.sh).
+3. Run `bash push-to-harbor.sh CONTAINER_NAME HARBOR_PROJECT VERSION Containerfile`.
+
+The script validates its four arguments, builds `linux/amd64`, and publishes:
+
+```text
+harbor.spike.tue.nl/HARBOR_PROJECT/CONTAINER_NAME:VERSION
+```
+
+Use immutable version tags such as `1.0.0` or a revision identifier. Do not
+overwrite a tag that another workload may need for reproducibility. Update a
+workload environment only after the new tag is visible in Harbor.
+
+## Common failures
+
+- **Login is rejected**: refresh access with `podman login harbor.spike.tue.nl`
+  and confirm Harbor project membership.
+- **Push is denied**: check the exact Harbor project name and your write role.
+- **Image pull fails in Run:ai**: check the image path and tag, then ensure the
+  workload project can access the Harbor project.
+
+<NextSteps links={[
+  { href: '/workloads/training/', label: 'Use the image in a training workload' },
+  { href: '/troubleshooting/', label: 'Resolve image and registry failures' },
+]} />

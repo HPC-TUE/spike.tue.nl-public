@@ -1,0 +1,16 @@
+---
+interface Props {
+  href: string;
+  title: string;
+  description: string;
+  eyebrow?: string;
+}
+const { href, title, description, eyebrow } = Astro.props;
+---
+
+<a class="task-link" href={href}>
+  {eyebrow && <span class="task-link__eyebrow">{eyebrow}</span>}
+  <span class="task-link__title">{title}</span>
+  <span class="task-link__description">{description}</span>
+  <span class="task-link__action">Open guide <span aria-hidden="true">→</span></span>
+</a>

@@ -1,0 +1,44 @@
+---
+title: Accounts and project access
+description: Sign in to Spike, verify project membership, and resolve access failures.
+audience: Researchers
+maturity: Verified
+lastVerified: 2026-07-14
+products: [Run:ai, Harbor]
+requiresVpn: true
+sourceRefs: [account-setup-guide-harbor-spike, runai_guide]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai', 'Harbor']} requiresVpn={true} />
+
+Open the [Run:ai portal](https://spike.run.ai/) and sign in with your TU/e
+account. Select the project that will own your workload. That project controls
+your available data sources, environments, and compute resources.
+
+## Verify access
+
+1. Confirm your intended project appears in the project selector.
+2. Open the Harbor registry and confirm you can see the corresponding Harbor project.
+3. If you work off campus, connect EduVPN before retrying access or terminal operations.
+4. Record the project name shown in the interfaces; use it consistently in image and workload guidance.
+
+## If access is missing
+
+| Symptom | Safe first check | Resolution |
+| --- | --- | --- |
+| You cannot sign in | Confirm you are using your TU/e account | Request account enablement through the project support channel. |
+| Project is absent | Check the current project selector | Ask the project owner to confirm your membership and role. |
+| Harbor repository is unavailable | Confirm the Harbor project name | Request membership of the matching Harbor project. |
+| Portal works but terminal traffic fails | Check EduVPN state | Reconnect EduVPN and retry the approved terminal path. |
+
+Do not share browser sessions, registry passwords, access tokens, or private keys
+to diagnose access problems.
+
+<NextSteps links={[
+  { href: '/images/podman-harbor/', label: 'Build and publish an image' },
+  { href: '/troubleshooting/', label: 'Access troubleshooting' },
+]} />

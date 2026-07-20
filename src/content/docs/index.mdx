@@ -1,0 +1,47 @@
+---
+title: Spike documentation
+description: The practical path from access request to a successful GPU workload.
+template: doc
+audience: Researchers and research-support staff
+maturity: Verified
+lastVerified: 2026-07-14
+products: [Run:ai, Harbor, Podman]
+sourceRefs: [runai_guide, account-setup-guide-harbor-spike]
+sensitivity: public
+---
+
+import TaskLink from '../../components/TaskLink.astro';
+import DocMeta from '../../components/DocMeta.astro';
+
+Spike is a TU/e research computing environment for GPU workloads. This site is
+organized around the work you need to complete, not around product menus.
+
+<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="Researchers and research-support staff" products={['Run:ai', 'Harbor', 'Podman']} />
+
+<div class="task-grid">
+  <TaskLink href="/start-here/" eyebrow="New to Spike" title="Get access" description="Check account, project, registry, and network prerequisites." />
+  <TaskLink href="/workloads/training/" eyebrow="First success" title="Run your first workload" description="Create a small training workload and follow it to completion." />
+  <TaskLink href="/images/podman-harbor/" eyebrow="Images" title="Build and push an image" description="Use Podman and Harbor to publish a reproducible environment." />
+  <TaskLink href="/access/terminal/" eyebrow="Connectivity" title="Connect to a workload" description="Forward a local port, use SSH safely, and reconnect to a running workload." />
+</div>
+
+## Your first successful workload
+
+1. Request access and confirm that your Run:ai project and Harbor project are visible.
+2. Build a small, versioned image with Podman and publish it to Harbor.
+3. Create a training workload in Run:ai with a modest compute-resource preset.
+4. Confirm the workload reaches **Running**, inspect its logs, and stop or delete it when finished.
+
+:::tip
+For the shortest path, start with [Start here](/start-here/), then follow the
+links at the bottom of each guide. Use [Troubleshooting](/troubleshooting/) as
+soon as a workflow does not behave as expected.
+:::
+
+## Service boundaries
+
+Spike provides the platform for workloads, scheduled compute, project-scoped
+data sources, and container environments. Your project determines what you can
+run and access. The public documentation deliberately does not expose
+operational credentials, internal identifiers, or project-administration
+procedures.

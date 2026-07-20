@@ -1,0 +1,40 @@
+:root {
+  --spike-red: #c8192e;
+  --spike-red-dark: #8d1020;
+  --spike-green: #76b900;
+  --spike-blue: #0069b4;
+  --spike-amber: #a45d00;
+  --spike-ink: #1d252c;
+  --spike-surface: #ffffff;
+  --spike-muted: #f4f6f8;
+  --spike-border: #d7dde3;
+  --spike-radius: 0.45rem;
+  --spike-shadow: 0 1px 2px rgb(29 37 44 / 0.08);
+  --sl-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --sl-color-accent-low: #f8d9dd;
+  --sl-color-accent: var(--spike-red);
+  --sl-color-accent-high: var(--spike-red-dark);
+}
+
+:root[data-theme='dark'] {
+  --spike-ink: #e8edf2;
+  --spike-surface: #172027;
+  --spike-muted: #202b34;
+  --spike-border: #40505e;
+  --spike-red: #ff7889;
+  --spike-red-dark: #ffd7dc;
+  --spike-blue: #6cbcff;
+  --spike-amber: #ffbf69;
+  --sl-color-accent-low: #4a1420;
+  --sl-color-accent: #ff7889;
+  --sl-color-accent-high: #ffd7dc;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--spike-red) 24%, transparent);
+}
+
+:focus-visible {
+  outline: 3px solid var(--spike-blue);
+  outline-offset: 3px;
+}

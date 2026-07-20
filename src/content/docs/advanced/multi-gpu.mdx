@@ -1,0 +1,29 @@
+---
+title: Multi-GPU, FSDP, and Torch Elastic
+description: Plan distributed workloads around the resources and recovery behavior they actually need.
+audience: Experienced researchers
+maturity: Experimental
+lastVerified: 2026-07-14
+products: [Run:ai, FSDP, Torch Elastic]
+sourceRefs: [multi-gpu, Torch-Elastic, FP4_torch_kernel]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+
+<DocMeta maturity="Experimental" lastVerified="2026-07-14" audience="Experienced researchers" products={['Run:ai', 'FSDP', 'Torch Elastic']} />
+
+Distributed training is a workload architecture, not only a larger GPU
+request. Validate the one-GPU command first, then align process count, visible
+devices, rendezvous settings, checkpointing, and selected Run:ai resources.
+
+## Recovery requirements
+
+- Persist checkpoints outside ephemeral storage.
+- Make initialization retry-safe and record the exact image tag.
+- Capture rank, world size, node placement, and first failure in logs.
+- Stop a test when the launcher repeatedly fails rather than consuming quota.
+
+FSDP, Torch Elastic, and low-precision kernels remain Experimental references
+until they have a current image, resource preset, distributed startup test, and
+checkpoint-recovery result.

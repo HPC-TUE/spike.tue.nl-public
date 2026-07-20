@@ -1,0 +1,37 @@
+---
+title: Advanced and experimental workflows
+description: Advanced training, benchmarking, hosted models, and reference material.
+audience: Experienced researchers
+maturity: Experimental
+lastVerified: 2026-07-14
+products: [Run:ai]
+sourceRefs: [Run-ai-accelerate-example, Torch-Elastic, inferencing-benchmark, model-metrics-monitor]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+
+<DocMeta maturity="Experimental" lastVerified="2026-07-14" audience="Experienced researchers" products={['Run:ai']} />
+
+This section contains material migrated from research examples that has not
+received the same end-to-end validation as the first-workload path. Treat every
+example as a starting point: validate it in your project, pin versions, and
+record the resulting configuration.
+
+## Topics
+
+- [Accelerate and distributed training](/advanced/accelerate/) separates a tested
+  launch pattern from an untested gradient-accumulation example.
+- Multi-GPU, FSDP, and Torch Elastic work must use the selected Run:ai resource
+  and workload architecture; do not transplant scheduler-specific commands.
+- Benchmark reports must state hardware, software versions, date, methodology,
+  and limitations. Results are not timeless capacity claims.
+- Hosted-model guidance should cover authentication, discovery, availability,
+  usage accounting, OpenAI-compatible requests, and optional Open WebUI
+  integration without assuming temporary quota or model availability.
+
+:::caution
+Client ID and client secret examples are not researcher-safe by default. Keep
+such API workflows in the private admin documentation until a safe credential
+flow has been verified.
+:::

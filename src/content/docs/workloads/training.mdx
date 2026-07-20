@@ -1,0 +1,164 @@
+---
+title: Run a training workload
+description: Submit, inspect, and clean up a first GPU training workload.
+audience: Researchers
+maturity: Verified
+lastVerified: 2026-07-14
+products: [Run:ai, Harbor]
+sourceRefs: [runai_guide, torch-example, multi-gpu]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+import ScreenshotFigure from '../../../components/ScreenshotFigure.astro';
+import projectSelection from '../../../assets/screenshots/workload-submission/training-create-01-select-project-sanitized.png';
+import projectSelectionWebp from '../../../assets/screenshots/workload-submission/training-create-01-select-project-sanitized.webp';
+import architectureSelection from '../../../assets/screenshots/workload-submission/training-create-02-architecture-template-name-sanitized.png';
+import architectureSelectionWebp from '../../../assets/screenshots/workload-submission/training-create-02-architecture-template-name-sanitized.webp';
+import environmentSelection from '../../../assets/screenshots/workload-submission/training-create-03-container-environment-sanitized.png';
+import environmentSelectionWebp from '../../../assets/screenshots/workload-submission/training-create-03-container-environment-sanitized.webp';
+import securityResources from '../../../assets/screenshots/workload-submission/training-create-04-security-and-compute-resources-sanitized.png';
+import securityResourcesWebp from '../../../assets/screenshots/workload-submission/training-create-04-security-and-compute-resources-sanitized.webp';
+import computeResource from '../../../assets/screenshots/workload-submission/training-create-05-select-compute-resource-sanitized.png';
+import computeResourceWebp from '../../../assets/screenshots/workload-submission/training-create-05-select-compute-resource-sanitized.webp';
+import workloadMenu from '../../../assets/screenshots/workload-submission/workload-list-new-workload-menu-sanitized.png';
+import workloadMenuWebp from '../../../assets/screenshots/workload-submission/workload-list-new-workload-menu-sanitized.webp';
+import dataSourceSelection from '../../../assets/screenshots/workload-submission/training-create-06-select-data-source-sanitized.png';
+import dataSourceSelectionWebp from '../../../assets/screenshots/workload-submission/training-create-06-select-data-source-sanitized.webp';
+import volumeConfiguration from '../../../assets/screenshots/workload-submission/training-create-07-configure-volume-sanitized.png';
+import volumeConfigurationWebp from '../../../assets/screenshots/workload-submission/training-create-07-configure-volume-sanitized.webp';
+import ephemeralVolume from '../../../assets/screenshots/workload-submission/training-create-08-configure-ephemeral-volume-sanitized.png';
+import ephemeralVolumeWebp from '../../../assets/screenshots/workload-submission/training-create-08-configure-ephemeral-volume-sanitized.webp';
+import generalSettings from '../../../assets/screenshots/workload-submission/training-create-09-general-settings-sanitized.png';
+import generalSettingsWebp from '../../../assets/screenshots/workload-submission/training-create-09-general-settings-sanitized.webp';
+import distributedArchitecture from '../../../assets/screenshots/workload-submission/training-create-10-distributed-architecture-sanitized.png';
+import distributedArchitectureWebp from '../../../assets/screenshots/workload-submission/training-create-10-distributed-architecture-sanitized.webp';
+import distributedEnvironment from '../../../assets/screenshots/workload-submission/training-create-11-distributed-environment-sanitized.png';
+import distributedEnvironmentWebp from '../../../assets/screenshots/workload-submission/training-create-11-distributed-environment-sanitized.webp';
+
+<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai', 'Harbor']} />
+
+Use a **training** workload for non-interactive work that should have a clear
+command, logs, and completion state. Use an interactive workspace only when you
+need a shell or notebook session, and use an inference workload for a serving
+endpoint.
+
+<ScreenshotFigure
+  src={workloadMenu.src}
+  webp={workloadMenuWebp.src}
+  alt="Run:ai Workloads page with the New Workload menu open and synthetic cluster, project, and workload values"
+  caption="Open New Workload and choose Training for a batch run; Workspace and Inference use different lifecycle and connectivity patterns."
+/>
+
+## First training run
+
+1. In Run:ai, select the correct project and choose **New workload** → **Training**.
+2. Give the workload a descriptive, non-sensitive name.
+3. Select the environment or image tag you published in Harbor.
+4. Select the smallest approved compute-resource preset that can run the test.
+5. Attach the required data source or persistent volume. Use ephemeral storage only for disposable data.
+6. Enter a command that produces a visible result, submit it, then open the workload details.
+7. Follow the logs until the workload reaches **Running** and then **Completed**.
+
+<ScreenshotFigure
+  src={projectSelection.src}
+  webp={projectSelectionWebp.src}
+  alt="Run:ai New training form with a synthetic cluster and project-alpha selected"
+  caption="Select the project before configuring the training workload. The example uses synthetic names and neutral resource bars."
+/>
+
+<ScreenshotFigure
+  src={architectureSelection.src}
+  webp={architectureSelectionWebp.src}
+  alt="Run:ai New training form with standard architecture, no saved template, and training-demo as the synthetic name"
+  caption="Choose standard or distributed architecture, start from a template when available, and use a non-sensitive workload name."
+/>
+
+<ScreenshotFigure
+  src={environmentSelection.src}
+  webp={environmentSelectionWebp.src}
+  alt="Run:ai New training environment form showing a synthetic Harbor image, pull policy, and approved credentials label"
+  caption="Select the immutable image tag and pull policy; use the approved credential mechanism without exposing a token."
+/>
+
+<ScreenshotFigure
+  src={securityResources.src}
+  webp={securityResourcesWebp.src}
+  alt="Run:ai New training form showing container security choices and synthetic compute-resource controls"
+  caption="Review the container identity and capabilities, then set only the compute resources required for the test."
+/>
+
+<ScreenshotFigure
+  src={computeResource.src}
+  webp={computeResourceWebp.src}
+  alt="Run:ai Compute Resources panel showing synthetic resource-small through resource-32xlarge presets"
+  caption="Choose an approved compute-resource preset; the example uses synthetic names and neutral capacity values."
+/>
+
+<ScreenshotFigure
+  src={dataSourceSelection.src}
+  webp={dataSourceSelectionWebp.src}
+  alt="Run:ai New training Data Sources panel with synthetic source-alpha through source-delta entries"
+  caption="Attach only the data sources required by the workload and keep disposable experiments separate from persistent project data."
+/>
+
+<ScreenshotFigure
+  src={volumeConfiguration.src}
+  webp={volumeConfigurationWebp.src}
+  alt="Run:ai New training volume configuration with synthetic resource-example values and persistent or ephemeral choices"
+  caption="Configure the storage class, access mode, claim size, mount path, and persistence mode deliberately before submitting."
+/>
+
+<ScreenshotFigure
+  src={ephemeralVolume.src}
+  webp={ephemeralVolumeWebp.src}
+  alt="Run:ai New training ephemeral volume configuration with synthetic storage-ephemeral values"
+  caption="Use ephemeral storage for disposable data only; it is not a substitute for a persistent project volume."
+/>
+
+<ScreenshotFigure
+  src={generalSettings.src}
+  webp={generalSettingsWebp.src}
+  alt="Run:ai New training General settings with synthetic preemptibility, priority, retry, and cleanup values"
+  caption="Set retry, preemption, completion, and cleanup behavior explicitly so the workload lifecycle matches your experiment."
+/>
+
+<ScreenshotFigure
+  src={distributedArchitecture.src}
+  webp={distributedArchitectureWebp.src}
+  alt="Run:ai Workload architecture panel showing synthetic distributed PyTorch worker choices"
+  caption="Use distributed architecture only when the launcher and worker configuration match the application design."
+/>
+
+<ScreenshotFigure
+  src={distributedEnvironment.src}
+  webp={distributedEnvironmentWebp.src}
+  alt="Run:ai distributed training environment with synthetic cluster, project, image, GPU, and worker values"
+  caption="Confirm the distributed image, project, worker count, and GPU request before starting a multi-worker run."
+/>
+
+## GPUs, priority, and retries
+
+Start with one GPU. Request a fractional GPU only where the selected
+compute-resource preset explicitly supports it. Multi-GPU and distributed
+training require an application launcher and architecture that match the
+selected resources; test the single-GPU path first.
+
+Priority and preemptibility affect scheduling. A preemptible workload must
+persist checkpoints and tolerate being retried. Cancel stale test workloads and
+delete completed disposable workloads to keep project resources understandable.
+
+:::note
+If a workload remains pending, inspect its selected project, image, resources,
+and data sources before changing settings. The [troubleshooting guide](/troubleshooting/)
+lists safe checks and escalation details.
+:::
+
+<NextSteps links={[
+  { href: '/workloads/interactive/', label: 'Use an interactive workspace for exploration' },
+  { href: '/workloads/inference/', label: 'Deploy a model endpoint' },
+  { href: '/workloads/lifecycle/', label: 'Understand workload states and recovery' },
+  { href: '/storage/data/', label: 'Choose storage safely' },
+  { href: '/troubleshooting/', label: 'Troubleshoot a pending or failed workload' },
+]} />

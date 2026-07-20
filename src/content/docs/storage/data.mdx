@@ -1,0 +1,40 @@
+---
+title: Storage and data
+description: Select project storage, transfer data safely, and understand lifecycle consequences.
+audience: Researchers
+maturity: Verified
+lastVerified: 2026-07-14
+products: [Run:ai]
+sourceRefs: [runai_guide, GPU-direct-storage]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai']} />
+
+Choose storage before submitting a workload. The storage choice determines
+whether your data survives a restart, retry, or deletion.
+
+| Storage choice | Use it for | Lifecycle |
+| --- | --- | --- |
+| Existing data source | Project datasets and shared inputs | Managed outside one workload; verify permissions before use. |
+| Persistent volume | Checkpoints, repeatable outputs, and long-lived work | Survives workload restarts according to project policy. |
+| Ephemeral volume | Caches, temporary preprocessing, and disposable scratch data | Removed with the associated workload; never store the only copy of a result. |
+
+## Transfer guidance
+
+Use `scp` for a small, specific transfer to an approved reachable endpoint. For
+large datasets, use the project’s established storage path or transfer process;
+avoid repeatedly moving copies through a running workload. Before cleanup,
+confirm important outputs exist in persistent storage and document the image tag,
+command, and input version used to produce them.
+
+Project provisioning, volume creation, resizing, copying, and deletion are
+admin operations and are intentionally documented only in the private wiki.
+
+<NextSteps links={[
+  { href: '/access/terminal/', label: 'Use terminal access safely' },
+  { href: '/workloads/training/', label: 'Attach storage to a workload' },
+]} />

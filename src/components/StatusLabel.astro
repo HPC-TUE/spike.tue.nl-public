@@ -1,0 +1,8 @@
+---
+interface Props {
+  state: 'Pending' | 'Initializing' | 'Running' | 'Completed' | 'Failed' | 'Stopped' | 'Deleted';
+}
+const { state } = Astro.props;
+---
+
+<span class:list={['status-label', 'status-label--' + state.toLowerCase()]}>{state}</span>

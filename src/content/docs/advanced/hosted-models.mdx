@@ -1,0 +1,65 @@
+---
+title: Hosted models and inference endpoints
+description: Discover hosted model targets, authenticate safely, and account for usage.
+audience: Researchers
+maturity: Experimental
+lastVerified: 2026-07-14
+products: [Run:ai, vLLM, Open WebUI, Podman]
+sourceRefs: [spike-hosting, inferencing-benchmark, model-metrics-monitor]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Experimental" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai', 'vLLM', 'Open WebUI', 'Podman']} />
+
+Hosted-model availability, limits, and accounting can change. Check the
+currently published target list and project policy at the time of use; do not
+hard-code a model name, quota, or availability claim into a paper or image.
+
+## Safe usage pattern
+
+1. Confirm that your project is allowed to use the target and understand how usage is accounted.
+2. Authenticate through the approved researcher-safe flow; never copy a client secret into a notebook or image.
+3. Discover the target and supported model identifiers from the service response.
+4. Use the documented OpenAI-compatible request shape only after confirming endpoint and model availability.
+5. Record model identifier, date, request limits, and software version with benchmark results.
+
+Open WebUI or a Podman-based client can be used only when its connection is
+configured through the same approved credential flow. Hosted-model monitoring
+and target provisioning remain admin operations.
+
+## Discovery and OpenAI-compatible requests
+
+Use the endpoint and token issued by the approved researcher workflow. Keep
+both values in the local environment rather than in a notebook or repository.
+
+```bash
+export HOSTED_MODEL_BASE_URL='https://approved-endpoint.example/v1'
+export HOSTED_MODEL_TOKEN='provided-through-the-approved-flow'
+curl --fail --silent \
+  -H "Authorization: Bearer ${HOSTED_MODEL_TOKEN}" \
+  "${HOSTED_MODEL_BASE_URL}/models"
+```
+
+The model list is the source of truth for currently available identifiers. A
+minimal OpenAI-compatible request follows the service documentation:
+
+```bash
+curl --fail --silent \
+  -H "Authorization: Bearer ${HOSTED_MODEL_TOKEN}" \
+  -H 'Content-Type: application/json' \
+  "${HOSTED_MODEL_BASE_URL}/chat/completions" \
+  -d '{"model":"MODEL_FROM_DISCOVERY","messages":[{"role":"user","content":"health check"}]}'
+```
+
+Replace the placeholder model only after discovery succeeds. Check response
+limits and usage accounting in the current project policy before running a
+large benchmark. Open WebUI and Podman clients must be configured with the
+same base URL and short-lived token flow; do not put credentials in an image.
+
+<NextSteps links={[
+  { href: '/advanced/benchmarks/', label: 'Record a reproducible benchmark' },
+  { href: '/support/', label: 'Ask about target access' },
+]} />

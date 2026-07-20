@@ -1,0 +1,51 @@
+---
+title: Install and verify the command-line tools
+description: Prepare Podman and the Run:ai CLI for repeatable workload and registry tasks.
+audience: Researchers
+maturity: Experimental
+lastVerified: 2026-07-15
+products: [Run:ai, Podman, Harbor]
+requiresVpn: true
+sourceRefs: [runai_guide, account-setup-guide-harbor-spike]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Experimental" lastVerified="2026-07-15" audience="Researchers" products={['Run:ai', 'Podman', 'Harbor']} requiresVpn={true} />
+
+Install the approved Podman and Run:ai CLI packages for your operating system
+using the current project onboarding instructions. Do not download binaries
+from an untrusted mirror or copy a CLI token into shell history.
+
+## Verify the local tools
+
+```bash
+podman version
+runai version
+```
+
+If a command is not found, install the package through the supported operating
+system channel and open a new terminal before retrying. Record the versions in
+an experiment note when a workflow depends on CLI behavior.
+
+## Authenticate without exposing secrets
+
+1. Connect EduVPN when required by your location.
+2. Sign in through the approved Run:ai browser or CLI flow and confirm the
+   intended project is selected.
+3. Authenticate Podman interactively with `podman login harbor.spike.tue.nl`.
+4. Verify access with a harmless image listing or pull of an approved image.
+5. Log out and revoke short-lived sessions when working on a shared machine.
+
+:::caution
+Never put registry passwords, client secrets, or CLI tokens in a Containerfile,
+repository, ticket, notebook, or command copied into a public issue.
+:::
+
+<NextSteps links={[
+  { href: '/access/accounts/', label: 'Confirm account and project access' },
+  { href: '/images/podman-harbor/', label: 'Build and publish an image' },
+  { href: '/troubleshooting/', label: 'Resolve CLI login failures' },
+]} />

@@ -1,0 +1,17 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+
+# generated
+.astro/
+.codebase-memory/
+
+# environment
+.env
+.env.*
+!.env.example
+
+# system
+.DS_Store

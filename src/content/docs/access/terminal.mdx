@@ -1,0 +1,43 @@
+---
+title: Terminal access and file transfer
+description: Safely connect to a running workload, forward ports, and transfer files.
+audience: Researchers
+maturity: Experimental
+lastVerified: 2026-07-14
+products: [Run:ai, SSH]
+requiresVpn: true
+sourceRefs: [SSH-container, ssh-container-gitlab]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Experimental" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai', 'SSH']} requiresVpn={true} />
+
+Terminal access is tied to a running workload. First start the workload in the
+Run:ai portal, then use the connection details approved for your project.
+
+## Connection pattern
+
+1. Connect EduVPN when required by your location.
+2. Confirm the workload status is **Running** and that its container has started.
+3. Use the portal or CLI-provided forwarding instruction to expose the intended service locally.
+4. Store repeatable connection settings in `~/.ssh/config`; keep private keys readable only by you.
+5. Reconnect by verifying the workload status first, then recreating the approved forwarding path.
+
+## File transfer
+
+Use `scp` for small, deliberate transfers to a reachable workload endpoint.
+For large datasets, prefer the project data source or persistent volume selected
+at workload creation. Avoid copying irreplaceable data into ephemeral storage.
+
+:::caution
+Never paste a private key, password, or access token into a ticket, notebook,
+terminal history shared with others, or this documentation repository.
+:::
+
+<NextSteps links={[
+  { href: '/storage/data/', label: 'Choose appropriate storage' },
+  { href: '/troubleshooting/', label: 'Troubleshoot an SSH failure' },
+]} />

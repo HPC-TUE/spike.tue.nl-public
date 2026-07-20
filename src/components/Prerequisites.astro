@@ -1,0 +1,11 @@
+---
+interface Props {
+  title?: string;
+}
+const { title = 'Before you begin' } = Astro.props;
+---
+
+<aside class="prerequisites" aria-label={title}>
+  <p>{title}</p>
+  <ul><slot /></ul>
+</aside>

@@ -1,0 +1,41 @@
+---
+title: Workload lifecycle, logs, and cleanup
+description: Interpret workload states, inspect logs, retry safely, and clean up.
+audience: Researchers
+maturity: Verified
+lastVerified: 2026-07-14
+products: [Run:ai]
+sourceRefs: [runai_guide, spike-1-cleanup]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai']} />
+
+| State | Meaning | Your next action |
+| --- | --- | --- |
+| Pending | Waiting for a schedulable resource or prerequisite | Check quota, resource preset, image, and data source. |
+| Initializing | Platform is preparing the workload | Wait for the transition or inspect the event details. |
+| Running | Container command is active | Inspect logs and checkpoint important work. |
+| Completed | Command ended successfully | Preserve results and delete disposable resources. |
+| Failed | Startup or application command ended with an error | Read the first relevant error in logs before retrying. |
+| Stopped | User or policy stopped the workload | Decide whether to resume with a checkpoint or remove it. |
+| Deleted | Workload record has been removed | Confirm results were stored outside ephemeral storage. |
+
+## Safe recovery
+
+Use status and logs before changing a configuration. When retrying, make one
+intentional change at a time and keep the previous image tag and command in the
+workload record. A retry is appropriate for transient scheduling or service
+failures; application errors need a corrected image, command, or data path.
+
+When a workload is no longer needed, stop it and delete only disposable runtime
+resources. Preserve outputs, checkpoints, and reproducibility notes in approved
+persistent storage.
+
+<NextSteps links={[
+  { href: '/troubleshooting/', label: 'Find the matching failure symptom' },
+  { href: '/advanced/', label: 'Move on to advanced workload patterns' },
+]} />

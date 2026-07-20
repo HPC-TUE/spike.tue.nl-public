@@ -1,0 +1,57 @@
+---
+title: Start here
+description: Prerequisites and the recommended learning path for a first Spike workload.
+audience: New researchers
+maturity: Verified
+lastVerified: 2026-07-14
+products: [Run:ai, Harbor, Podman]
+requiresVpn: true
+sourceRefs: [runai_guide, account-setup-guide-harbor-spike]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+import Prerequisites from '../../../components/Prerequisites.astro';
+
+<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="New researchers" products={['Run:ai', 'Harbor', 'Podman']} requiresVpn={true} />
+
+Before creating a workload, confirm each item below. Resolving missing access
+first prevents the most common failed submissions.
+
+<Prerequisites title="New-user checklist">
+  <li>You are eligible to use the TU/e research-computing service.</li>
+  <li>You can sign in to the <a href="https://spike.run.ai/">Run:ai portal</a> with your TU/e account.</li>
+  <li>The intended project appears in the project selector and your role allows workload creation.</li>
+  <li>You are a member of the corresponding Harbor project and Podman is installed on your build machine.</li>
+  <li>EduVPN is connected whenever your network location requires it.</li>
+</Prerequisites>
+
+## Recommended path
+
+| Goal | Guide |
+| --- | --- |
+| Confirm access and project membership | [Accounts and project access](/access/accounts/) |
+| Publish a reproducible environment | [Podman and Harbor](/images/podman-harbor/) |
+| Submit a first job | [Training workloads](/workloads/training/) |
+| Move data and reconnect to work | [Storage and data](/storage/data/) and [Terminal access](/access/terminal/) |
+
+## Official service context
+
+For institutional context, service boundaries, and SCC announcements, see the
+[TU/e Supercomputing Spike-1 page](https://supercomputing.tue.nl/spike-1/).
+Use this wiki for the practical researcher workflow; the institutional page is
+the source for service-level announcements.
+
+## Essential vocabulary
+
+- **Project**: the boundary for members, workloads, data sources, and allocated compute.
+- **Environment**: a reusable workload configuration that identifies an image and runtime settings.
+- **Compute resource**: a project-approved preset for GPU, CPU, and memory requests.
+- **Data source**: storage made available to a project or workload.
+- **Preemptible workload**: work that may be stopped so higher-priority work can run; it must tolerate retries.
+
+<NextSteps links={[
+  { href: '/access/accounts/', label: 'Confirm access' },
+  { href: '/images/podman-harbor/', label: 'Publish an image' },
+]} />

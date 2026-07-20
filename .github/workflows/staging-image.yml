@@ -1,0 +1,63 @@
+name: Staging image verification
+
+on:
+  workflow_dispatch:
+    inputs:
+      container_name:
+        description: Lowercase image name
+        required: true
+        type: string
+      harbor_project:
+        description: Harbor project with push permission
+        required: true
+        type: string
+      version:
+        description: Immutable staging tag
+        required: true
+        type: string
+      containerfile:
+        description: Repository-relative Containerfile path
+        required: true
+        default: staging/Containerfile
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    environment: harbor-staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install Podman
+        run: |
+          if ! command -v podman >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install --yes podman
+          fi
+          podman --version
+
+      - name: Log in to Harbor
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          test -n "$HARBOR_USERNAME" || { echo "HARBOR_USERNAME is not configured"; exit 1; }
+          test -n "$HARBOR_PASSWORD" || { echo "HARBOR_PASSWORD is not configured"; exit 1; }
+          printf '%s' "$HARBOR_PASSWORD" | podman login harbor.spike.tue.nl \
+            --username "$HARBOR_USERNAME" --password-stdin
+
+      - name: Build and push staging image
+        run: |
+          test -f "${{ inputs.containerfile }}" || {
+            echo "Containerfile not found: ${{ inputs.containerfile }}"
+            exit 1
+          }
+          bash public/downloads/push-to-harbor.sh \
+            "${{ inputs.container_name }}" \
+            "${{ inputs.harbor_project }}" \
+            "${{ inputs.version }}" \
+            "${{ inputs.containerfile }}"

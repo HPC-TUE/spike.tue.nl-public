@@ -1,0 +1,43 @@
+---
+title: Inference workloads
+description: Serve a model endpoint with explicit resource, authentication, and cleanup expectations.
+audience: Researchers
+maturity: Experimental
+lastVerified: 2026-07-15
+products: [Run:ai, Harbor, vLLM]
+sourceRefs: [runai_guide, inferencing, hosted-models]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Experimental" lastVerified="2026-07-15" audience="Researchers" products={['Run:ai', 'Harbor', 'vLLM']} />
+
+Use an inference workload when a model must remain available behind a serving
+endpoint. Keep it separate from training and interactive workloads so its
+resource demand, health checks, and cleanup policy are explicit.
+
+## Deployment checklist
+
+1. Confirm the model and its license are approved for the selected project.
+2. Choose an immutable Harbor image tag and a compute-resource preset sized for
+   the model. Start with one replica while validating the endpoint.
+3. Provide runtime tokens through the approved secret mechanism; never bake
+   credentials into the image or command line.
+4. Configure the endpoint and health check, then verify a harmless request from
+   an authorized client.
+5. Record the image tag, model revision, resource preset, and request limits.
+6. Stop and delete the workload when the endpoint is no longer needed.
+
+:::note
+Hosted-model availability and quotas change. Check the current service status
+and usage guidance instead of copying a temporary model name or quota into a
+workload definition.
+:::
+
+<NextSteps links={[
+  { href: '/images/podman-harbor/', label: 'Publish the serving image' },
+  { href: '/advanced/hosted-models/', label: 'Review hosted-model access' },
+  { href: '/troubleshooting/', label: 'Troubleshoot workload startup' },
+]} />

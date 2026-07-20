@@ -1,0 +1,15 @@
+---
+interface Props {
+  number: number;
+  title: string;
+}
+const { number, title } = Astro.props;
+---
+
+<section class="workflow-step">
+  <span class="workflow-step__number" aria-hidden="true">{number}</span>
+  <div>
+    <h3>{title}</h3>
+    <slot />
+  </div>
+</section>

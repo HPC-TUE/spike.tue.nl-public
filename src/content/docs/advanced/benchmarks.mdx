@@ -1,0 +1,32 @@
+---
+title: Benchmarking and performance reports
+description: Record benchmark methodology so results remain reproducible and appropriately scoped.
+audience: Experienced researchers
+maturity: Experimental
+lastVerified: 2026-07-14
+products: [Run:ai, Prometheus]
+sourceRefs: [AI-Benchmarking-scripts, inferencing-benchmark, sharepoint]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+
+<DocMeta maturity="Experimental" lastVerified="2026-07-14" audience="Experienced researchers" products={['Run:ai', 'Prometheus']} />
+
+Benchmark results are observations of one configuration, not a promise of
+timeless capacity. Publish the conditions with the result.
+
+## Required record
+
+| Field | Record |
+| --- | --- |
+| Hardware | GPU model/count, CPU, memory, node class, and allocation |
+| Software | Image tag, driver/runtime, framework, libraries, and versions |
+| Workload | Command, batch size, precision, dataset or synthetic input |
+| Method | Warm-up, repetitions, measurement window, and metric definition |
+| Date | Run date and platform state |
+| Limits | Variance, failed runs, bottlenecks, and what was not measured |
+
+Keep raw outputs and scripts in the approved project storage. A benchmark that
+does not include these fields should remain an internal experiment rather than
+be presented as a platform comparison.

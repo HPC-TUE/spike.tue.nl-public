@@ -1,0 +1,55 @@
+---
+title: Troubleshooting
+description: Diagnose common Spike workflow failures safely and know what to include in an escalation.
+audience: Researchers
+maturity: Verified
+lastVerified: 2026-07-14
+products: [Run:ai, Harbor, Podman, SSH]
+sourceRefs: [runai_tools, SSH-container, container]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+
+<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai', 'Harbor', 'Podman', 'SSH']} />
+
+Start with the smallest safe check, then make one change at a time. Do not
+include credentials, private keys, full access tokens, or sensitive data paths
+in diagnostics or support requests.
+
+## Access denied or expired CLI login
+
+Confirm the TU/e account, selected project, role, EduVPN state, and current
+interactive login. If the project is absent, ask the project owner to verify
+membership rather than repeatedly retrying.
+
+## Podman login, image push, or image pull failure
+
+Confirm the exact Harbor project and immutable image tag. Refresh the interactive
+registry login, then retry. For a pull failure, compare the workload image path
+with the tag visible in Harbor and confirm project access.
+
+## Workload stays pending or reports insufficient quota
+
+Inspect the selected project, compute-resource preset, priority, and requested
+GPU amount. Reduce a test workload to the smallest suitable preset or wait for
+capacity. Escalate with the workload name, project, requested resource, state,
+and timestamp.
+
+## Container exits immediately, GPU is missing, or distributed startup fails
+
+Read the first relevant application error in the workload logs. Verify the
+command, image tag, mounted data path, and selected resource. For distributed
+runs, confirm the launcher’s process count matches the visible GPU allocation.
+
+## SSH failure or missing files
+
+Confirm the workload is still running and EduVPN is connected. Recreate the
+approved forwarding path. Check whether files were placed in ephemeral storage;
+ephemeral data does not survive workload deletion.
+
+## Escalate with useful information
+
+Include the project, workload name, approximate time, current state, safe log
+excerpt, image tag, selected compute resource, and steps already tried. Omit
+all secrets and personal data.

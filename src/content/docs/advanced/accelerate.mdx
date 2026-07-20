@@ -1,0 +1,38 @@
+---
+title: Accelerate and distributed training
+description: An experimental route from a tested single-node launcher to distributed training.
+audience: Experienced researchers
+maturity: Experimental
+lastVerified: 2026-07-14
+products: [Run:ai, Accelerate]
+sourceRefs: [Run-ai-accelerate-example, accelerate-example, Torch-Elastic, multi-gpu]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Experimental" lastVerified="2026-07-14" audience="Experienced researchers" products={['Run:ai', 'Accelerate']} />
+
+Start with a verified one-GPU training workload and a pinned image. Then use an
+Accelerate launch command that matches the GPU count exposed by the selected
+compute resource. Capture logs, world size, package versions, and the exact
+image tag for every run.
+
+## Tested progression
+
+1. Run the training command on one GPU and save a checkpoint.
+2. Request the intended multi-GPU resource only after the single-GPU run is reproducible.
+3. Configure the distributed launcher for the actual process count and visible devices.
+4. Confirm every process starts, writes a single coherent log stream, and can restore a checkpoint.
+
+## Untested material
+
+The migrated gradient-accumulation example is retained as an **Experimental**
+reference. Do not treat it as a confirmed Spike recipe until it has been tested
+with a current image, resource preset, and recovery path.
+
+<NextSteps links={[
+  { href: '/workloads/training/', label: 'Revisit the verified training path' },
+  { href: '/troubleshooting/', label: 'Resolve distributed startup failures' },
+]} />

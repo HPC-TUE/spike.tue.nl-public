@@ -1,0 +1,43 @@
+---
+title: Interactive workspaces
+description: Use a temporary shell or notebook workspace without confusing it with a training job.
+audience: Researchers
+maturity: Experimental
+lastVerified: 2026-07-15
+products: [Run:ai, Podman]
+sourceRefs: [runai_guide, SSH-container]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Experimental" lastVerified="2026-07-15" audience="Researchers" products={['Run:ai', 'Podman']} />
+
+An interactive workspace is a temporary shell or notebook environment for
+exploration, debugging, and preparing a reproducible command. It is not a
+replacement for a training workload: interactive sessions consume resources
+while you work and should be stopped when you are finished.
+
+## Start and stop safely
+
+1. Choose **Interactive workspace** in Run:ai and select the smallest approved
+   compute resource that supports the experiment.
+2. Select a tested Harbor image and the data source or persistent volume you
+   need. Keep disposable scratch files on ephemeral storage only.
+3. Record the image tag, command, and data source before connecting a shell or
+   notebook.
+4. Stop the workspace when you leave. Delete it after confirming that outputs
+   and notebooks are stored outside ephemeral storage.
+
+:::caution
+Do not treat a long-running interactive workspace as a free development
+machine. It can block project capacity and is difficult to reproduce unless the
+image, resources, and commands are recorded.
+:::
+
+<NextSteps links={[
+  { href: '/access/terminal/', label: 'Connect to a running workspace' },
+  { href: '/workloads/training/', label: 'Promote a reproducible command to training' },
+  { href: '/workloads/lifecycle/', label: 'Understand states and cleanup' },
+]} />
