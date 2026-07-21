@@ -25,6 +25,9 @@ function targetFor(url) {
   const pathname = url.split(/[?#]/, 1)[0];
   if (!pathname.startsWith('/')) return null;
   const decoded = decodeURIComponent(pathname);
+  if (decoded.startsWith('/downloads/') && fs.existsSync(path.join(outputRoot, decoded))) {
+    return path.join(outputRoot, decoded);
+  }
   if (decoded.endsWith('/')) return path.join(outputRoot, decoded, 'index.html');
   if (path.extname(decoded)) return path.join(outputRoot, decoded);
   return path.join(outputRoot, decoded, 'index.html');

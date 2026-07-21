@@ -3,7 +3,7 @@ title: Terminal access and file transfer
 description: Safely connect to a running workload, forward ports, and transfer files.
 audience: Researchers
 maturity: Experimental
-lastVerified: 2026-07-14
+lastVerified: 2026-07-21
 products: [Run:ai, SSH]
 requiresVpn: true
 sourceRefs: [SSH-container, ssh-container-gitlab]
@@ -13,24 +13,63 @@ sensitivity: public
 import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
 
-<DocMeta maturity="Experimental" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai', 'SSH']} requiresVpn={true} />
+<DocMeta maturity="Experimental" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai', 'SSH']} requiresVpn={true} />
 
 Terminal access is tied to a running workload. First start the workload in the
-Run:ai portal, then use the connection details approved for your project.
+Run:ai portal, then use the connection details approved for your project. A
+sanitized SSH-container example is available as a [Containerfile](/downloads/ssh-container/Containerfile),
+[SSH configuration](/downloads/ssh-container/sshd_config), and
+[startup script](/downloads/ssh-container/start-sshd.sh). Use the Podman and
+Harbor workflow documented on this site to build and publish your
+project-approved image.
 
-## Connection pattern
+## CPU workspace connection pattern
 
-1. Connect EduVPN when required by your location.
-2. Confirm the workload status is **Running** and that its container has started.
-3. Use the portal or CLI-provided forwarding instruction to expose the intended service locally.
-4. Store repeatable connection settings in `~/.ssh/config`; keep private keys readable only by you.
-5. Reconnect by verifying the workload status first, then recreating the approved forwarding path.
+1. Connect EduVPN when required by your location and run `run login`.
+2. Create an **Interactive workspace** using the SSH-container image, select the
+   CPU-only compute resource, and attach the project PVC at `/data`. Do not
+   request a GPU just to transfer files.
+3. Confirm the workspace is **Running** and that the SSH service listens on
+   port `2222`.
+4. Keep the port-forward open in one terminal:
+
+   ```bash
+   runai workspace port-forward WORKLOAD_NAME \
+     --project PROJECT_NAME \
+     --port 2222:2222
+   ```
+
+5. In a second terminal, connect with the private key that matches the public
+   key baked into the image:
+
+   ```bash
+   ssh -i ~/.ssh/id_ed25519 developer@localhost -p 2222
+   ```
+
+6. Transfer data to the mounted PVC path, not the container's home directory:
+
+   ```bash
+   scp -P 2222 -i ~/.ssh/id_ed25519 -r ./local-data \
+     developer@localhost:/data/
+   ```
+
+   To download a result, reverse the direction:
+
+   ```bash
+   scp -P 2222 -i ~/.ssh/id_ed25519 -r \
+     developer@localhost:/data/results ./results
+   ```
+
+Keep the forwarding terminal open while using SSH or SCP. Reconnect by
+checking that the workspace is still **Running**, then recreate the forwarding
+command.
 
 ## File transfer
 
 Use `scp` for small, deliberate transfers to a reachable workload endpoint.
-For large datasets, prefer the project data source or persistent volume selected
-at workload creation. Avoid copying irreplaceable data into ephemeral storage.
+For large datasets, transfer directly into the PVC-mounted `/data` path or use
+the project data-source workflow. Avoid copying irreplaceable data into the
+container filesystem or an ephemeral volume.
 
 :::caution
 Never paste a private key, password, or access token into a ticket, notebook,

@@ -3,16 +3,16 @@ title: Storage and data
 description: Select project storage, transfer data safely, and understand lifecycle consequences.
 audience: Researchers
 maturity: Verified
-lastVerified: 2026-07-14
+lastVerified: 2026-07-21
 products: [Run:ai]
-sourceRefs: [runai_guide, GPU-direct-storage]
+sourceRefs: [runai_guide, SSH-container, GPU-direct-storage]
 sensitivity: public
 ---
 
 import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
 
-<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai']} />
+<DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
 
 Choose storage before submitting a workload. The storage choice determines
 whether your data survives a restart, retry, or deletion.
@@ -22,6 +22,27 @@ whether your data survives a restart, retry, or deletion.
 | Existing data source | Project datasets and shared inputs | Managed outside one workload; verify permissions before use. |
 | Persistent volume | Checkpoints, repeatable outputs, and long-lived work | Survives workload restarts according to project policy. |
 | Ephemeral volume | Caches, temporary preprocessing, and disposable scratch data | Removed with the associated workload; never store the only copy of a result. |
+
+## Container filesystem versus PVC
+
+The writable container filesystem is part of the running container's temporary
+runtime state. It is useful for package caches, logs, and short-lived scratch
+files, but it is not a durable data location. A new workload, image update,
+retry, or deletion can give you a fresh filesystem.
+
+A persistent volume claim (PVC) is separate storage mounted into the workload.
+When the SSH container workflow mounts a PVC at `/data`, files copied with SCP
+to `/data` are written to that PVC rather than into the image layer. They can be
+used by later workloads that mount the same claim, subject to project
+permissions, quota, and the PVC's lifecycle policy.
+
+If `/data` is not backed by a PVC, it is only an ordinary directory in the
+container and should be treated as temporary. Always verify the mount before a
+large transfer and keep a second copy of irreplaceable data where project
+policy requires it.
+
+For the complete SSH transfer sequence, see
+[Terminal access and file transfer](/access/terminal/).
 
 ## Transfer guidance
 

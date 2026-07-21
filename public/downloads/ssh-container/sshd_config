@@ -1,0 +1,10 @@
+Port 2222
+ListenAddress 0.0.0.0
+HostKey /home/developer/.ssh/ssh_host_ed25519_key
+AuthorizedKeysFile /home/developer/.ssh/authorized_keys
+PidFile /home/developer/.ssh/sshd.pid
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitRootLogin no
+UsePAM no
+StrictModes no

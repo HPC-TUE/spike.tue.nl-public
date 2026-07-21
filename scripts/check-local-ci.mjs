@@ -3,6 +3,8 @@ import fs from 'node:fs';
 const workflow = fs.readFileSync('.github/workflows/deploy.yml', 'utf8');
 const staging = fs.readFileSync('.github/workflows/staging-image.yml', 'utf8');
 const failures = [];
+if (!/workflow_dispatch:/m.test(workflow)) failures.push('manual deployment dispatch');
+if (/^\s+push:\s*$/m.test(workflow)) failures.push('automatic push deployment must remain disabled');
 for (const [label, pattern] of [
   ['npm install', /npm ci/], ['release verification', /npm run verify:release/],
   ['Astro Pages build', /withastro\/action@/], ['Pages deploy', /actions\/deploy-pages@/], ['Pages write permission', /pages:\s*write/],

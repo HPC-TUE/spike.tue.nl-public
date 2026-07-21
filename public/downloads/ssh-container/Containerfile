@@ -1,0 +1,33 @@
+FROM python:3.13-slim-bookworm
+
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+ENV USERNAME=developer
+ENV SSH_PORT=2222
+
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends openssh-server ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid "${USER_GID}" "${USERNAME}" \
+    && useradd --create-home --uid "${USER_UID}" --gid "${USER_GID}" --shell /bin/bash "${USERNAME}"
+
+RUN mkdir -p /run/sshd "/home/${USERNAME}/.ssh" \
+    && chmod 700 "/home/${USERNAME}/.ssh"
+
+# Place your own public key beside this file as id_ed25519.pub before building.
+COPY id_ed25519.pub /tmp/id_ed25519.pub
+RUN install --owner="${USERNAME}" --group="${USERNAME}" --mode=600 \
+      /tmp/id_ed25519.pub "/home/${USERNAME}/.ssh/authorized_keys" \
+    && rm /tmp/id_ed25519.pub
+
+COPY sshd_config /home/${USERNAME}/.ssh/sshd_config
+COPY start-sshd.sh /usr/local/bin/start-sshd.sh
+RUN chown "${USERNAME}:${USERNAME}" "/home/${USERNAME}/.ssh/sshd_config" \
+    && chmod 600 "/home/${USERNAME}/.ssh/sshd_config" \
+    && chmod 755 /usr/local/bin/start-sshd.sh
+
+WORKDIR /data
+USER ${USERNAME}:${USERNAME}
+EXPOSE 2222
+ENTRYPOINT ["/usr/local/bin/start-sshd.sh"]
