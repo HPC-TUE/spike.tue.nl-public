@@ -11,6 +11,7 @@ sensitivity: public
 
 import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
+import PythonArrayTypes from '../../../assets/synchronization/numpy-array-vs-list.png';
 
 <DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
 
@@ -220,11 +221,109 @@ tensor([[ 0.1443,  2.0319, -2.6817],
         [ 0.4965,  0.1256, -0.6250]], device='cuda:0')
 ```
 
-## CUDA kernel support
+## Control flow synchronization
 
-## Is an operation truly parallel?
+Sometimes, a computation graph involves more complicated control flow alongside data flow.
+For example, in physics-restricted neural networks, it is not uncommon to combine a neural network flow with a system solving flow.
+As an example, we assume calculation of a gain parameter using iterative solving alongside phase deviation determination with a neural network.
+This approach was suggested by Mateos-Ramos et al. in a paper called [Model-Based End-to-End Learning for Multi-Target Integrated Sensing and Communication Under Hardware Impairments](https://doi.org/10.1109/TWC.2024.3522667).
+Solving uses a termination condition for which solving should take place until this condition is met.
+Solving in this context is executed with a [while loop](https://docs.pytorch.org/docs/2.13/higher_order_ops/while_loop.html) control flow pattern:
+
+```
+import torch
+from torch._higher_order_ops import while_loop
+
+class While(torch.nn.Module):
+
+    def cond_fn(self, iter_count, x):
+        return iter_count.sum() > 0
+
+    def body_fn(self, iter_count, x):
+        return iter_count - 1, x * 2
+
+    def forward(self, init_iter, init_x):
+        final_iter, final_x = while_loop(self.cond_fn, self.body_fn, (init_iter, init_x))
+        return final_iter, final_x
+
+m = While()
+```
+
+The forum post [From Tensorflow to Pytorch (while_loop)](https://discuss.pytorch.org/t/from-tensorflow-to-pytorch-while-loop/109282/7) explains that the while_loop op is placed on the CPU and subsequently launches kernels to the GPU.
+Therefore, the chance for pipeline bottlenecking in this situation is very high due to the device synchronization required in every iteration of the while_loop op.
+In this situation, we recommend preventing termination based on a ***torch.Tensor*** value itself and to define a termination condition upfront as a configuration (or hyper-) parameter.
+Subsequently, we recommend unrolling the while loop iterations into separate chained pipeline layers.
+Even though this introduces excess memory usage to keep track of separate tensors and parameters per layer, it prevents synchronization because execution in this case moves kernel-to-kernel with data residing in global GPU vRAM:
+
+```
+import torch
+import torch.nn as nn
+
+
+class IterationLayer(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+        
+		self.register_buffer('zero_int', torch.tensor(0, dtype=torch.long))
+        self.register_buffer('one_int', torch.tensor(1, dtype=torch.long))
+        self.register_buffer('two_float', torch.tensor(2.0))
+
+    def forward(self, iter_count, x):
+
+        cond_sum = torch.sum(iter_count)
+        is_active = torch.gt(cond_sum, self.zero_int)
+
+        decremented_iter = torch.sub(iter_count, self.one_int)
+        multiplied_x = torch.mul(x, self.two_float)
+
+        next_iter = torch.where(is_active, decremented_iter, iter_count)
+        next_x = torch.where(is_active, multiplied_x, x)
+
+        return next_iter, next_x
+
+
+class UnrolledWhile(nn.Module):
+
+	# NOTE: you have to tune num_layers to make sure the correct termination condition is reached!
+    def __init__(self, num_layers: int):
+        super().__init__()
+        
+		self.layers = nn.ModuleList([IterationLayer() for _ in range(num_layers)])
+
+    def forward(self, init_iter, init_x):
+        iter_count, x = init_iter, init_x
+        
+        # Sequentially route tensors through each PyTorch Module layer
+        for layer in self.layers:
+            iter_count, x = layer(iter_count, x)
+
+        return iter_count, x
+
+
+num_layers = 5  # Static hyperparameter
+m = UnrolledWhile(num_layers=num_layers)
+```
 
 ## Context switching
+
+One of the reasons why Python is a very popular programming language has to do with the ability to combine packages contributed by third-party developers rather easily.
+Interpretation, rather than strict definition enforcement which is expected during compiling or tracing, in many cases, when developers define interpretation behavior upfront, makes combining packages feel almost seamless from the perspective of the user.
+However, interpretation comes at the cost of efficiency loss caused by both synchronization and type re-interpretation when switching context from one package type to another package type.
+As an example why re-interpretation is necessary, we hereby show both the Python ***List*** and Numpy ***ndarray*** datatypes (derived from [Using Scientific Python Packages (NumPy, Pandas and more)](https://rse.shef.ac.uk/pando-python/instructor/optimisation-numpy.html)):
+
+<img src={PythonArrayTypes} alt="Data structure difference between the Python List and Numpy ndarray datatypes." />
+
+Both datatypes each have their own niche strengths and weaknesses.
+Inserts are much cheaper in the Python List structure since copying is not necessary.
+Access efficiency is much higher in the Numpy ndarray structure because elements are contiguous layed out in RAM.
+In any case, we want to prevent re-interpretation (referred to as a context switch in this situation) causing the need to convert a contiguous memory block into a pointer memory table and spread values.
+Additionally, many optimized CUDA kernels do not support spread value access because the likelihood for encountering cache misses in shared threadblock memory drastically increases.
+Therefore, conversion to a datatype involving spread values also causes the data to be synchronized back to the CPU again.
+
+We recommend sticking to a single package which involves datatypes with elements contiguous layed out in memory as much as possible.
+PyTorch tensors already lay out elements contiguously and sticking to pure tensor operations (not involving packages which are based on other datatypes) does not force re-interpretation.
+Additionally, pure tensor operations allows deterministic graph tracing to chained CUDA kernel launches without the need for additional re-interpretation and/or synchronization ops.
 
 <NextSteps links={[
   { href: '/access/terminal/', label: 'Use terminal access safely' },
