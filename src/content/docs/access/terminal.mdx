@@ -1,75 +1,91 @@
 ---
-title: Terminal access and file transfer
-description: Safely connect to a running workload, forward ports, and transfer files.
+title: Terminal access
+description: Open a shell in a running Spike workspace, or connect to an SSH-enabled workspace through port forwarding.
 audience: Researchers
 maturity: Experimental
-lastVerified: 2026-07-21
+lastVerified: 2026-07-29
 products: [Run:ai, SSH]
 requiresVpn: true
-sourceRefs: [SSH-container, ssh-container-gitlab]
+sourceRefs: [runai_tools, SSH-container, ssh-container-gitlab]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
 
-<DocMeta maturity="Experimental" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai', 'SSH']} requiresVpn={true} />
+The simplest way to look around inside a running workspace is to open a Bash
+shell with the Run:ai CLI. This connects directly to the workspace's main pod;
+you do not need to install or configure an SSH server in the container.
 
-Terminal access is tied to a running workload. First start the workload in the
-Run:ai portal, then use the connection details approved for your project. A
-sanitized SSH-container example is available as a [Containerfile](/downloads/ssh-container/Containerfile),
-[SSH configuration](/downloads/ssh-container/sshd_config), and
-[startup script](/downloads/ssh-container/start-sshd.sh). Use the Podman and
-Harbor workflow documented on this site to build and publish your
-project-approved image.
+Before connecting, [install and sign in to the Run:ai
+CLI](/access/cli/#install-the-runai-cli), connect eduVPN when required, and
+confirm in the Run:ai portal that the workspace is **Running**.
 
-## CPU workspace connection pattern
+## Open a shell in a running workspace
 
-1. Connect EduVPN when required by your location and run `run login`.
-2. Create an **Interactive workspace** using the SSH-container image, select the
-   CPU-only compute resource, and attach the project PVC at `/data`. Do not
-   request a GPU just to transfer files.
-3. Confirm the workspace is **Running** and that the SSH service listens on
-   port `2222`.
-4. Keep the port-forward open in one terminal:
+Find the workspace name, then open a shell:
+
+```bash
+runai workspace list --project PROJECT_NAME
+runai workspace bash WORKSPACE_NAME --project PROJECT_NAME
+```
+
+You are now running Bash inside the workspace's main pod. From here you can
+inspect the filesystem, check the mounted data, or verify that the GPU is
+visible:
+
+```bash
+pwd
+ls -la
+nvidia-smi
+```
+
+Type `exit` to leave the shell. This disconnects your terminal but does not
+stop the workspace. If the workspace has more than one pod, select one
+explicitly:
+
+```bash
+runai workspace bash WORKSPACE_NAME \
+  --project PROJECT_NAME \
+  --pod POD_NAME
+```
+
+See NVIDIA's [`runai workspace bash`
+reference](https://run-ai-docs.nvidia.com/self-hosted/reference/cli/runai/runai_workspace_bash)
+for the available options.
+
+## Advanced: Connect to the SSH container
+
+SSH is only available when the workspace uses an image that runs an SSH
+server. Spike provides an [SSH-container
+example](/downloads/ssh-container/README.md) for this purpose; a regular
+workspace image does not need SSH. The [Podman and Harbor
+guide](/images/podman-harbor/#ssh-container-example-location) links all files
+needed to build the example.
+
+Once that SSH-enabled workspace is **Running**:
+
+1. Connect [eduVPN](https://www.surf.nl/en/getting-started-with-eduvpn) when
+   required by your location, then run `runai login`.
+2. Keep the port forward open in one terminal:
 
    ```bash
-   runai workspace port-forward WORKLOAD_NAME \
+   runai workspace port-forward WORKSPACE_NAME \
      --project PROJECT_NAME \
      --port 2222:2222
    ```
 
-5. In a second terminal, connect with the private key that matches the public
-   key baked into the image:
+3. In a second terminal, connect with the private key matching the public key
+   added when the SSH-container image was built:
 
    ```bash
    ssh -i ~/.ssh/id_ed25519 developer@localhost -p 2222
    ```
 
-6. Transfer data to the mounted PVC path, not the container's home directory:
+Keep the forwarding terminal open while using SSH. Reconnect by checking that
+the workspace is still **Running**, then start the port forward again.
 
-   ```bash
-   scp -P 2222 -i ~/.ssh/id_ed25519 -r ./local-data \
-     developer@localhost:/data/
-   ```
-
-   To download a result, reverse the direction:
-
-   ```bash
-   scp -P 2222 -i ~/.ssh/id_ed25519 -r \
-     developer@localhost:/data/results ./results
-   ```
-
-Keep the forwarding terminal open while using SSH or SCP. Reconnect by
-checking that the workspace is still **Running**, then recreate the forwarding
-command.
-
-## File transfer
-
-Use `scp` for small, deliberate transfers to a reachable workload endpoint.
-For large datasets, transfer directly into the PVC-mounted `/data` path or use
-the project data-source workflow. Avoid copying irreplaceable data into the
-container filesystem or an ephemeral volume.
+For moving files rather than opening a shell, follow the complete [File
+transfer guide](/storage/file-transfer/).
 
 :::caution
 Never paste a private key, password, or access token into a ticket, notebook,
@@ -78,5 +94,6 @@ terminal history shared with others, or this documentation repository.
 
 <NextSteps links={[
   { href: '/storage/data/', label: 'Choose appropriate storage' },
-  { href: '/troubleshooting/', label: 'Troubleshoot an SSH failure' },
+  { href: '/storage/file-transfer/', label: 'Transfer data to a workload' },
+  { href: '/troubleshooting/', label: 'Troubleshoot a terminal failure' },
 ]} />

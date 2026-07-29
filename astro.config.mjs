@@ -18,10 +18,13 @@ export default defineConfig({
       description: 'Practical guidance for running research workloads on Spike.',
       disable404Route: true,
       customCss: ['./src/styles/tokens.css', './src/styles/custom.css'],
+      components: {
+        Head: './src/components/Head.astro',
+      },
       sidebar: [
         {
-          label: 'Start here',
-          items: [{ slug: 'start-here' }, { slug: 'reference/glossary' }],
+          label: 'Getting started',
+          items: [{ slug: 'start-here' }, { slug: 'start-here/intake' }],
         },
         {
           label: 'Access & connectivity',
@@ -33,16 +36,17 @@ export default defineConfig({
         },
         {
           label: 'Running workloads',
-          items: [{ slug: 'workloads/training' }, { slug: 'workloads/interactive' }, { slug: 'workloads/inference' }, { slug: 'workloads/lifecycle' }],
+          items: [{ slug: 'workloads/training' }, { slug: 'workloads/inference' }, { slug: 'workloads/lifecycle' }],
         },
         {
           label: 'Storage & data',
-          items: [{ slug: 'storage/data' }],
+          items: [{ slug: 'storage/data' }, { slug: 'storage/file-transfer' }],
         },
         {
           label: 'Advanced & experimental',
           items: [
             { slug: 'advanced' },
+            { slug: 'advanced/runai-cli' },
             { slug: 'advanced/accelerate' },
             { slug: 'advanced/multi-gpu' },
             { slug: 'advanced/experiment-tracking' },

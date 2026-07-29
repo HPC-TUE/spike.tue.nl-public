@@ -3,7 +3,7 @@ title: Troubleshooting
 description: Diagnose common Spike workflow failures safely and know what to include in an escalation.
 audience: Researchers
 maturity: Verified
-lastVerified: 2026-07-14
+lastVerified: 2026-07-21
 products: [Run:ai, Harbor, Podman, SSH]
 sourceRefs: [runai_tools, SSH-container, container]
 sensitivity: public
@@ -11,7 +11,7 @@ sensitivity: public
 
 import DocMeta from '../../../components/DocMeta.astro';
 
-<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai', 'Harbor', 'Podman', 'SSH']} />
+<DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai', 'Harbor', 'Podman', 'SSH']} />
 
 Start with the smallest safe check, then make one change at a time. Do not
 include credentials, private keys, full access tokens, or sensitive data paths
@@ -32,9 +32,20 @@ with the tag visible in Harbor and confirm project access.
 ## Workload stays pending or reports insufficient quota
 
 Inspect the selected project, compute-resource preset, priority, and requested
-GPU amount. Reduce a test workload to the smallest suitable preset or wait for
-capacity. Escalate with the workload name, project, requested resource, state,
-and timestamp.
+GPU amount. All projects use the same weighting and, by default, run over
+quota; an ordinary request does not receive a project-specific queue advantage.
+Reduce a test workload to the smallest suitable preset or wait for capacity.
+
+If the project is ready for a scale-up, request a temporary quota and GPU
+priority window from the administrators. Include the project, GPU type/count,
+resource preset, reason the workload is ready, requested start date, requested
+number of weeks, expected utilization, and a checkpoint/recovery plan. A grant
+ends when the agreed window ends and the project returns to its normal
+over-quota state.
+
+Escalate with the workload name, project, requested resource, state, and
+timestamp. Do not treat a priority request as a guarantee of immediate GPU
+capacity.
 
 ## Container exits immediately, GPU is missing, or distributed startup fails
 

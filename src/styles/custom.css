@@ -11,17 +11,6 @@
 .task-link__title { font-size: 1.08rem; font-weight: 750; }
 .task-link__description { flex: 1; font-size: 0.92rem; line-height: 1.5; }
 
-.doc-meta { margin: 1.25rem 0 1.75rem; padding: 0.9rem 1rem; border-inline-start: 0.3rem solid var(--spike-blue); border-radius: 0 var(--spike-radius) var(--spike-radius) 0; background: color-mix(in srgb, var(--spike-blue) 8%, var(--spike-surface)); }
-.doc-meta--verified { border-color: var(--spike-green); }
-.doc-meta--experimental { border-color: var(--spike-amber); }
-.doc-meta--historical { border-color: #65727e; }
-.doc-meta--admin { border-color: var(--spike-red); }
-.doc-meta__status { margin: 0; }
-.doc-meta dl { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; margin: 0.65rem 0 0; font-size: 0.88rem; }
-.doc-meta dl div { display: flex; gap: 0.35rem; }
-.doc-meta dt { color: var(--sl-color-gray-3); }
-.doc-meta dd { margin: 0; }
-
 .next-steps { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--spike-border); }
 .next-steps > p { margin-bottom: 0.35rem; font-weight: 750; }
 .next-steps ul { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin: 0; padding: 0; list-style: none; }
@@ -51,6 +40,4 @@
 
 @media (max-width: 42rem) {
   .task-grid { grid-template-columns: 1fr; }
-  .doc-meta dl { display: block; }
-  .doc-meta dl div + div { margin-top: 0.25rem; }
 }

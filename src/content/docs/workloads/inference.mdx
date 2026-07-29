@@ -1,9 +1,9 @@
 ---
 title: Inference workloads
-description: Serve a model endpoint with explicit resource, authentication, and cleanup expectations.
+description: Prepare an inference request for deployment and management by SCC AI Engineers.
 audience: Researchers
 maturity: Experimental
-lastVerified: 2026-07-15
+lastVerified: 2026-07-29
 products: [Run:ai, Harbor, vLLM]
 sourceRefs: [runai_guide, inferencing, hosted-models]
 sensitivity: public
@@ -14,21 +14,34 @@ import NextSteps from '../../../components/NextSteps.astro';
 
 <DocMeta maturity="Experimental" lastVerified="2026-07-15" audience="Researchers" products={['Run:ai', 'Harbor', 'vLLM']} />
 
-Use an inference workload when a model must remain available behind a serving
-endpoint. Keep it separate from training and interactive workloads so its
-resource demand, health checks, and cleanup policy are explicit.
+Inference on Spike is deployed and managed for you by SCC AI Engineers. If a
+model must remain available behind a serving endpoint, discuss the requirement
+with your SCC AI Engineer. They will determine the appropriate deployment,
+resources, access controls, health checks, and cleanup policy with you.
 
-## Deployment checklist
+:::caution
+Do not create, change, restart, or delete inference workloads yourself. Ask an
+SCC AI Engineer to make these changes for you.
+:::
 
-1. Confirm the model and its license are approved for the selected project.
-2. Choose an immutable Harbor image tag and a compute-resource preset sized for
-   the model. Start with one replica while validating the endpoint.
-3. Provide runtime tokens through the approved secret mechanism; never bake
-   credentials into the image or command line.
-4. Configure the endpoint and health check, then verify a harmless request from
-   an authorized client.
-5. Record the image tag, model revision, resource preset, and request limits.
-6. Stop and delete the workload when the endpoint is no longer needed.
+## What to prepare
+
+Before meeting with the AI Engineer:
+
+1. Confirm that the model and its license are suitable for the project.
+2. Record the model revision, expected usage, and intended users or client
+   applications.
+3. Prepare an immutable Harbor image tag, or discuss what the serving image
+   needs to contain.
+4. Identify any runtime tokens or other secrets. These must be provided through
+   the approved secret mechanism, never baked into an image or command line.
+5. Describe the expected request volume, response-time needs, and how long the
+   endpoint is required.
+
+The AI Engineer will create and validate the inference workload, including its
+compute-resource preset, replicas, endpoint, authentication, health checks, and
+request limits. Contact them again when the deployment needs to change or can
+be removed.
 
 :::note
 Hosted-model availability and quotas change. Check the current service status
@@ -37,7 +50,7 @@ workload definition.
 :::
 
 <NextSteps links={[
-  { href: '/images/podman-harbor/', label: 'Publish the serving image' },
+  { href: '/images/podman-harbor/', label: 'Understand container images' },
   { href: '/advanced/hosted-models/', label: 'Review hosted-model access' },
-  { href: '/troubleshooting/', label: 'Troubleshoot workload startup' },
+  { href: '/support/', label: 'Contact SCC support' },
 ]} />

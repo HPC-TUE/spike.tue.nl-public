@@ -1,0 +1,12 @@
+# Spike S3-compatible storage example.
+# Replace XXXX with credentials supplied through the approved project process.
+# Keep the resulting ~/.s3cfg private (chmod 600) and never commit it.
+access_key = XXXX
+secret_key = XXXX
+host_base = s3.spike.tue.nl
+host_bucket = %(bucket)s.s3.spike.tue.nl
+# Do not use this invalid path-style value:
+# host_bucket = s3.spike.tue.nl/%wronguid
+signature_v2 = True
+use_https = True
+bucket_location = eu-west-1

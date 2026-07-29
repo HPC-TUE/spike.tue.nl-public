@@ -1,22 +1,160 @@
 ---
 title: Experiment tracking
-description: Use tracking services without putting credentials or sensitive data into images and logs.
+description: Record reproducible runs with TensorBoard, Weights & Biases, or both.
 audience: Researchers
 maturity: Experimental
-lastVerified: 2026-07-14
-products: [Run:ai, Weights & Biases]
+lastVerified: 2026-07-29
+products: [Run:ai, TensorBoard, Weights & Biases]
 sourceRefs: [Run-ai-accelerate-example, wandb-slurm-sweep]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
 
-<DocMeta maturity="Experimental" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai', 'Weights & Biases']} />
+Experiment tracking connects a result to the code, data, image, resources, and
+parameters that produced it. On Spike, you can keep event files on project
+storage with TensorBoard, send approved metadata to Weights & Biases (W&B), or
+use both.
 
-Configure experiment tracking through the approved secret mechanism. Keep
-tokens out of Containerfiles, command lines, source control, and captured logs.
+| Option | Where the record lives | Best fit |
+| --- | --- | --- |
+| TensorBoard | Event files on an approved PVC or data source | Metrics and visualizations should remain with project data |
+| W&B | The configured external W&B service, or a local offline directory | Comparing runs, teams, sweeps, and managed dashboards |
+| Both | Local TensorBoard files plus approved W&B metadata | Local ownership with a shared comparison dashboard |
 
-Record the Run:ai project, image tag, workload name, code revision, dataset
-version, and tracking run identifier together so a result can be reproduced.
-External scheduler examples in the source material are Historical; translate
-them to a Run:ai workload rather than copying their commands.
+:::caution
+Treat tracking as data export. Before using an external service, confirm that
+the project permits it. Do not log personal data, sensitive samples, raw
+prompts, full filesystem paths, credentials, or confidential model outputs.
+:::
+
+## Record the same identity everywhere
+
+For each run, record:
+
+- Run:ai project and workload name.
+- Immutable Harbor image tag.
+- Code revision and configuration revision.
+- Dataset identifier or version, without sensitive filenames.
+- Compute-resource preset and GPU count.
+- Random seed, framework versions, and mixed-precision mode.
+- TensorBoard log directory and/or W&B run ID.
+
+Use one run directory per attempt. Reusing a directory can merge unrelated
+event files and make comparisons misleading.
+
+## TensorBoard on project storage
+
+For PyTorch, write event files to a mounted persistent path:
+
+```python
+from torch.utils.tensorboard import SummaryWriter
+
+writer = SummaryWriter("/data/experiments/run-2026-07-29/tensorboard")
+
+for step, loss in enumerate(training_losses):
+    writer.add_scalar("train/loss", loss, step)
+
+writer.close()
+```
+
+In distributed training, create the writer only on rank 0. Save the log
+directory on a PVC or approved data source; event files written to ephemeral
+storage disappear with the pod.
+
+To inspect the files, start TensorBoard in a workspace that mounts the same
+storage:
+
+```bash
+tensorboard \
+  --logdir /data/experiments \
+  --host 0.0.0.0 \
+  --port 6006
+```
+
+Then forward the port from your computer:
+
+```bash
+runai workspace port-forward WORKSPACE_NAME \
+  --project PROJECT_NAME \
+  --port 6006:6006
+```
+
+Open `http://localhost:6006` while the port-forward command remains active.
+The official [TensorBoard getting-started
+guide](https://www.tensorflow.org/tensorboard/get_started) covers scalars,
+graphs, histograms, and log-directory organization.
+
+## Weights & Biases
+
+Ask whether W&B is approved for the project before creating a run. Provide
+`WANDB_API_KEY` through a Run:ai credential or approved secret; never put the
+key in a Containerfile, image, repository, command, notebook, or `.env` file
+that is copied into the image.
+
+```python
+import wandb
+
+config = {
+    "learning_rate": 3e-4,
+    "batch_size": 32,
+    "image_tag": "training:1.4.0",
+}
+
+with wandb.init(project="PROJECT_NAME", config=config) as run:
+    for step, loss in enumerate(training_losses):
+        run.log({"train/loss": loss}, step=step)
+```
+
+Set non-secret values such as the project or run group as ordinary environment
+variables. Use `WANDB_MODE=offline` when the service is temporarily unreachable
+or when the project workflow requires review before upload. Store the resulting
+`wandb/` directory on persistent storage; synchronize it only when policy
+allows.
+
+Use the official [W&B
+quickstart](https://docs.wandb.ai/models/quickstart), [environment-variable
+reference](https://docs.wandb.ai/models/track/environment-variables), and
+[offline-mode
+guidance](https://docs.wandb.ai/support/models/articles/is-it-possible-to-save-metrics-offline-a)
+for the installed client version.
+
+## Track with Accelerate
+
+Accelerate can emit to TensorBoard and W&B from one logging call:
+
+```python
+from accelerate import Accelerator
+from accelerate.utils import LoggerType
+
+accelerator = Accelerator(
+    log_with=[LoggerType.TENSORBOARD, "wandb"],
+    project_dir="/data/experiments/run-2026-07-29",
+)
+accelerator.init_trackers(
+    "PROJECT_NAME",
+    config={"learning_rate": 3e-4, "batch_size": 32},
+)
+
+accelerator.log({"train/loss": 0.42}, step=100)
+accelerator.end_training()
+```
+
+Accelerate handles main-process logging for its integrated trackers. Review the
+current [Accelerate experiment-tracker
+documentation](https://huggingface.co/docs/accelerate/usage_guides/tracking)
+before combining trackers.
+
+## Sweeps and parallel runs
+
+Do not translate a Slurm job array directly into an unlimited W&B sweep. Each
+sweep agent consumes a Run:ai workload and project capacity. Agree on maximum
+parallelism and compute resources with your SCC AI Engineer, then start with a
+small bounded sweep that can resume cleanly.
+
+<NextSteps links={[
+  { href: '/advanced/accelerate/', label: 'Integrate tracking with Accelerate' },
+  { href: '/advanced/benchmarks/', label: 'Record benchmark methodology' },
+  { href: '/storage/data/', label: 'Choose persistent project storage' },
+  { href: '/access/terminal/', label: 'Forward the TensorBoard port' },
+]} />

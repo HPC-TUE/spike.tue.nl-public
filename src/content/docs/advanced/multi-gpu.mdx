@@ -1,29 +1,152 @@
 ---
-title: Multi-GPU, FSDP, and Torch Elastic
-description: Plan distributed workloads around the resources and recovery behavior they actually need.
+title: Multi-GPU and multi-node training
+description: Configure single-node and distributed Run:ai workloads without confusing GPUs, processes, workers, and nodes.
 audience: Experienced researchers
 maturity: Experimental
-lastVerified: 2026-07-14
-products: [Run:ai, FSDP, Torch Elastic]
-sourceRefs: [multi-gpu, Torch-Elastic, FP4_torch_kernel]
+lastVerified: 2026-07-29
+products: [Run:ai, PyTorch, NCCL]
+sourceRefs: [multi-gpu, Torch-Elastic, Run-ai-accelerate-example]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
+import ScreenshotFigure from '../../../components/ScreenshotFigure.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+import computeResource from '../../../assets/screenshots/workload-submission/training-create-05-select-compute-resource-sanitized.png';
+import computeResourceWebp from '../../../assets/screenshots/workload-submission/training-create-05-select-compute-resource-sanitized.webp';
+import distributedArchitecture from '../../../assets/screenshots/workload-submission/training-create-10-distributed-architecture-sanitized.png';
+import distributedArchitectureWebp from '../../../assets/screenshots/workload-submission/training-create-10-distributed-architecture-sanitized.webp';
+import distributedEnvironment from '../../../assets/screenshots/workload-submission/training-create-11-distributed-environment-sanitized.png';
+import distributedEnvironmentWebp from '../../../assets/screenshots/workload-submission/training-create-11-distributed-environment-sanitized.webp';
 
-<DocMeta maturity="Experimental" lastVerified="2026-07-14" audience="Experienced researchers" products={['Run:ai', 'FSDP', 'Torch Elastic']} />
+Multi-GPU and multi-node training solve different problems:
 
-Distributed training is a workload architecture, not only a larger GPU
-request. Validate the one-GPU command first, then align process count, visible
-devices, rendezvous settings, checkpointing, and selected Run:ai resources.
+| Layout | Run:ai shape | Typical launcher |
+| --- | --- | --- |
+| One GPU | One pod, one GPU, one process | `python train.py` |
+| Multiple GPUs on one node | One pod requesting multiple GPUs | `torchrun` or `accelerate launch` |
+| Multiple nodes | A distributed workload with multiple pods | A Run:ai-compatible `torchrun`, Accelerate, or MPI entrypoint |
 
-## Recovery requirements
+Use more GPUs only after profiling shows that the single-GPU run is compute
+bound and the model or batch can scale. More GPUs can make a run slower when
+input loading, communication, or checkpoint writing is the bottleneck.
 
-- Persist checkpoints outside ephemeral storage.
-- Make initialization retry-safe and record the exact image tag.
-- Capture rank, world size, node placement, and first failure in logs.
-- Stop a test when the launcher repeatedly fails rather than consuming quota.
+:::caution
+Multi-GPU and multi-node workloads require advance agreement with your SCC AI
+Engineer. Do not change the compute-resource preset, GPU devices per pod,
+number of workers, priority, or elasticity settings yourself.
+:::
 
-FSDP, Torch Elastic, and low-precision kernels remain Experimental references
-until they have a current image, resource preset, distributed startup test, and
-checkpoint-recovery result.
+## Prepare the application first
+
+Before changing Run:ai:
+
+1. Make the single-GPU command reproducible with an immutable image.
+2. Write checkpoints to a PVC or approved data source, not the image filesystem.
+3. Ensure only rank 0 writes shared metrics or non-sharded output.
+4. Record the local batch size, gradient accumulation, and intended global
+   batch size.
+5. Confirm the framework can restore after a pod restart or preemption.
+
+For PyTorch, choose the training strategy deliberately:
+
+- [DistributedDataParallel
+  (DDP)](https://docs.pytorch.org/tutorials/intermediate/ddp_tutorial.html)
+  keeps a model replica on each GPU and synchronizes gradients.
+- [Fully Sharded Data Parallel
+  (FSDP)](https://docs.pytorch.org/docs/stable/fsdp.html) shards model state to
+  reduce per-GPU memory use, but makes configuration and checkpointing more
+  involved.
+- [Distributed Checkpoint
+  (DCP)](https://docs.pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html)
+  supports parallel, sharded checkpoints that can be restored with a different
+  topology.
+
+## Single-node multi-GPU in Run:ai
+
+Use a **Standard** training workload and select the approved compute resource
+that requests the agreed number of GPUs in one pod. The process count must
+match the GPUs visible inside that pod.
+
+```bash
+torchrun \
+  --standalone \
+  --nnodes=1 \
+  --nproc-per-node=gpu \
+  train.py \
+  --checkpoint-dir /checkpoints
+```
+
+This example is only for one node. The training script must read
+`LOCAL_RANK`, use one GPU per process, and initialize the NCCL process group.
+See the current PyTorch [`torchrun`
+reference](https://docs.pytorch.org/docs/stable/elastic/run) before adapting it.
+
+<ScreenshotFigure
+  src={computeResource.src}
+  webp={computeResourceWebp.src}
+  alt="Run:ai compute-resource panel with synthetic preset names"
+  caption="For single-node multi-GPU, select the compute-resource preset agreed with your SCC AI Engineer. The synthetic values shown here are not recommendations."
+/>
+
+## Multi-node settings in Run:ai
+
+Create a **Training** workload and configure it as follows:
+
+1. Under **Workload architecture**, select **Distributed**.
+2. Select the framework expected by the image, normally **PyTorch** for a
+   `torchrun` workload.
+3. Choose **Workers & master** or **Workers only** according to the launcher's
+   design. In NVIDIA's PyTorch example, the master also trains, so one master
+   plus one worker produces two participating pods.
+4. Use the same immutable image and working directory for every participating
+   pod unless the tested design requires a separate master.
+5. Enter the validated runtime command or wrapper script. It must consume the
+   rank and world-size information injected by the PyTorch operator.
+6. Select the approved GPU devices per pod and number of workers.
+7. Mount the same data and checkpoint locations in every pod.
+
+<ScreenshotFigure
+  src={distributedArchitecture.src}
+  webp={distributedArchitectureWebp.src}
+  alt="Run:ai training form with Distributed, PyTorch, and Workers and master selected"
+  caption="Choose Distributed, the correct framework, and the worker/master layout before configuring pod resources."
+/>
+
+<ScreenshotFigure
+  src={distributedEnvironment.src}
+  webp={distributedEnvironmentWebp.src}
+  alt="Run:ai distributed training form with synthetic image, GPU, and worker values"
+  caption="Configure the worker environment and resources together. The screenshot is synthetic: use only the GPU and worker counts approved for your project."
+/>
+
+NVIDIA's [distributed PyTorch tutorial for
+Run:ai](https://run-ai-docs.nvidia.com/saas/tutorials/training-tutorials/distributed-pytorch)
+explains how the PyTorch operator supplies `RANK`, `LOCAL_RANK`, and
+`WORLD_SIZE`. The [distributed workload
+guide](https://run-ai-docs.nvidia.com/saas/workloads-in-nvidia-run-ai/using-training/distributed-training-models)
+documents the worker, master, resource, and elasticity fields.
+
+## Validate before the real run
+
+Start with a short synthetic or reduced-data test and confirm:
+
+- Every expected rank starts once and reports the same world size.
+- Each process sees one intended GPU and no two processes claim the same device.
+- The global batch size equals local batch size × process count × gradient
+  accumulation.
+- A checkpoint is written, reloaded, and produces the expected next step.
+- Metrics are emitted once rather than duplicated by every rank.
+- The run stops cleanly and its important logs are saved before they disappear.
+
+For communication failures, temporarily set `NCCL_DEBUG=INFO` and save a
+separate log for each rank. Remove debug overrides after diagnosis. Use NVIDIA's
+[NCCL troubleshooting
+guide](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting.html)
+instead of copying interface or transport settings from another cluster.
+
+<NextSteps links={[
+  { href: '/advanced/accelerate/', label: 'Configure Accelerate or FSDP' },
+  { href: '/advanced/experiment-tracking/', label: 'Track distributed runs once' },
+  { href: '/advanced/benchmarks/', label: 'Measure scaling efficiency' },
+  { href: '/support/', label: 'Review the resource plan with SCC' },
+]} />

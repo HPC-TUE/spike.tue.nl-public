@@ -1,18 +1,18 @@
 ---
 title: Storage and data
-description: Select project storage, transfer data safely, and understand lifecycle consequences.
+description: Select project storage and understand lifecycle consequences before transferring data.
 audience: Researchers
 maturity: Verified
 lastVerified: 2026-07-21
-products: [Run:ai]
-sourceRefs: [runai_guide, SSH-container, GPU-direct-storage]
+products: [Run:ai, S3]
+sourceRefs: [runai_guide, SSH-container, GPU-direct-storage, spike-1-automation]
 sensitivity: public
 ---
 
 import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
 
-<DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
+<DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai', 'S3']} />
 
 Choose storage before submitting a workload. The storage choice determines
 whether your data survives a restart, retry, or deletion.
@@ -22,6 +22,7 @@ whether your data survives a restart, retry, or deletion.
 | Existing data source | Project datasets and shared inputs | Managed outside one workload; verify permissions before use. |
 | Persistent volume | Checkpoints, repeatable outputs, and long-lived work | Survives workload restarts according to project policy. |
 | Ephemeral volume | Caches, temporary preprocessing, and disposable scratch data | Removed with the associated workload; never store the only copy of a result. |
+| S3-compatible object storage | Large datasets, shared objects, and transfers between tools | Independent of a workload; access requires a project bucket and credentials. |
 
 ## Container filesystem versus PVC
 
@@ -41,21 +42,15 @@ container and should be treated as temporary. Always verify the mount before a
 large transfer and keep a second copy of irreplaceable data where project
 policy requires it.
 
-For the complete SSH transfer sequence, see
-[Terminal access and file transfer](/access/terminal/).
-
-## Transfer guidance
-
-Use `scp` for a small, specific transfer to an approved reachable endpoint. For
-large datasets, use the project’s established storage path or transfer process;
-avoid repeatedly moving copies through a running workload. Before cleanup,
-confirm important outputs exist in persistent storage and document the image tag,
-command, and input version used to produce them.
+For the complete transfer choices and examples, see
+[File transfer](/storage/file-transfer/). Before cleanup, confirm important
+outputs exist in persistent storage and document the image tag, command, and
+input version used to produce them.
 
 Project provisioning, volume creation, resizing, copying, and deletion are
 admin operations and are intentionally documented only in the private wiki.
 
 <NextSteps links={[
-  { href: '/access/terminal/', label: 'Use terminal access safely' },
+  { href: '/storage/file-transfer/', label: 'Choose a data-transfer method' },
   { href: '/workloads/training/', label: 'Attach storage to a workload' },
 ]} />

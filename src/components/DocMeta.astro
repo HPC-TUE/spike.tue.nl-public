@@ -7,22 +7,6 @@ interface Props {
   requiresVpn?: boolean;
 }
 
-const { maturity, lastVerified, audience, products = [], requiresVpn = false } = Astro.props;
-const label = maturity === 'Verified'
-  ? 'Verified in the current Spike environment'
-  : maturity === 'Experimental'
-    ? 'Experimental: review before relying on this workflow'
-    : maturity === 'Historical'
-      ? 'Historical reference: not a recommended Spike workflow'
-      : 'Admin-only operational material';
+// Guide metadata remains available in content frontmatter but is intentionally
+// not rendered as a block at the start of each page.
 ---
-
-<aside class:list={['doc-meta', 'doc-meta--' + maturity.toLowerCase()]} aria-label="Guide status">
-  <p class="doc-meta__status"><strong>{maturity}</strong> — {label}</p>
-  <dl>
-    {lastVerified && <div><dt>Last verified</dt><dd>{lastVerified}</dd></div>}
-    {audience && <div><dt>Audience</dt><dd>{audience}</dd></div>}
-    {products.length > 0 && <div><dt>Products</dt><dd>{products.join(', ')}</dd></div>}
-    {requiresVpn && <div><dt>Network</dt><dd>EduVPN may be required</dd></div>}
-  </dl>
-</aside>

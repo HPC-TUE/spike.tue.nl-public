@@ -1,0 +1,131 @@
+---
+title: Launch workloads with the Run:ai CLI
+description: Submit, inspect, follow, and remove a standard training workload from a terminal.
+audience: Experienced researchers
+maturity: Experimental
+lastVerified: 2026-07-29
+products: [Run:ai, Harbor]
+requiresVpn: true
+sourceRefs: [runai_guide, runai_tools]
+sensitivity: public
+---
+
+import ScreenshotFigure from '../../../components/ScreenshotFigure.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+import computeResource from '../../../assets/screenshots/workload-submission/training-create-05-select-compute-resource-sanitized.png';
+import computeResourceWebp from '../../../assets/screenshots/workload-submission/training-create-05-select-compute-resource-sanitized.webp';
+
+The Run:ai CLI is useful when a workload definition is stable enough to repeat
+from a script or terminal. Start with the portal while learning the fields,
+then translate the approved project, environment, compute resource, and data
+source into CLI flags.
+
+The CLI is available only after account creation. Follow [Install and verify
+the command-line tools](/access/cli/) before using this page.
+
+:::caution
+The CLI does not bypass project policy. Use only the compute resource and data
+sources agreed during onboarding. Ask your SCC AI Engineer before changing the
+compute resource, GPU count, priority, preemptibility, or worker count.
+:::
+
+## Sign in and set the project
+
+```bash
+runai login
+runai project list
+runai project set PROJECT_NAME
+runai whoami
+```
+
+Setting the project reduces repetition, but keeping
+`--project PROJECT_NAME` in saved commands makes their target explicit. Run
+`runai project set` again when you intentionally switch projects.
+
+## Inspect the command before submitting
+
+The installed CLI matches the Spike Run:ai environment and can change after a
+platform update. Check its built-in help before adding flags:
+
+```bash
+runai version
+runai training standard submit --help
+```
+
+NVIDIA maintains the complete [Run:ai CLI command
+reference](https://run-ai-docs.nvidia.com/saas/reference/cli/runai) and a
+set of [CLI examples](https://run-ai-docs.nvidia.com/saas/reference/cli/cli-examples).
+
+## Submit a standard training workload
+
+Replace every uppercase placeholder with a value visible in your Run:ai
+project:
+
+```bash
+runai training standard submit cli-smoke-test \
+  --project PROJECT_NAME \
+  --environment ENVIRONMENT_NAME \
+  --compute COMPUTE_RESOURCE_NAME \
+  --datasource type=pvc,name=DATA_SOURCE_NAME \
+  --command -- python /workspace/train.py --epochs 1
+```
+
+This example deliberately reuses Run:ai assets instead of rebuilding their
+settings as raw flags:
+
+- `--environment` selects the approved container environment.
+- `--compute` selects an existing compute-resource preset.
+- `--datasource` attaches the project data source.
+- `--command --` replaces the image entrypoint with everything that follows.
+
+Omit `--datasource` when the test does not need project data. Omit
+`--command -- ...` when the image's own entrypoint is already correct. See the
+official [`runai training standard submit`
+reference](https://run-ai-docs.nvidia.com/saas/reference/cli/runai/runai_training_standard_submit)
+for the flags supported by the installed release.
+
+<ScreenshotFigure
+  src={computeResource.src}
+  webp={computeResourceWebp.src}
+  alt="Run:ai compute-resource selection showing synthetic preset names and neutral capacity values"
+  caption="The CLI's --compute value refers to the same approved compute-resource asset shown in the portal. Do not copy the synthetic names from this screenshot."
+/>
+
+## Inspect the run
+
+```bash
+runai training standard list --project PROJECT_NAME
+runai training standard describe cli-smoke-test --project PROJECT_NAME
+runai training standard logs cli-smoke-test \
+  --project PROJECT_NAME \
+  --follow \
+  --timestamps
+```
+
+Use `describe` to inspect the selected image, compute, pods, and events. Stop
+following logs with `Ctrl+C`; that does not stop the workload.
+
+:::caution
+Run:ai logs are short-lived and can disappear shortly after a workload stops or
+fails. Save relevant output immediately or send application logs to approved
+persistent storage or experiment tracking.
+:::
+
+## Suspend, resume, and remove
+
+```bash
+runai training standard suspend cli-smoke-test --project PROJECT_NAME
+runai training standard resume cli-smoke-test --project PROJECT_NAME
+runai training standard delete cli-smoke-test --project PROJECT_NAME
+```
+
+Delete only after outputs and diagnostic logs are safe. Suspending does not make
+ephemeral files persistent. Use the portal when you are unsure which workload a
+command targets.
+
+<NextSteps links={[
+  { href: '/workloads/training/', label: 'Review the standard training workflow' },
+  { href: '/workloads/lifecycle/', label: 'Understand workload states and logs' },
+  { href: '/advanced/multi-gpu/', label: 'Plan a distributed workload' },
+  { href: '/troubleshooting/', label: 'Troubleshoot a failed submission' },
+]} />

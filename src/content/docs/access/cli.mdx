@@ -1,51 +1,107 @@
 ---
 title: Install and verify the command-line tools
-description: Prepare Podman and the Run:ai CLI for repeatable workload and registry tasks.
+description: Install Podman, the Run:ai CLI, and EduVPN, then verify access to your Spike project.
 audience: Researchers
 maturity: Experimental
-lastVerified: 2026-07-15
+lastVerified: 2026-07-29
 products: [Run:ai, Podman, Harbor]
 requiresVpn: true
 sourceRefs: [runai_guide, account-setup-guide-harbor-spike]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
 
-<DocMeta maturity="Experimental" lastVerified="2026-07-15" audience="Researchers" products={['Run:ai', 'Podman', 'Harbor']} requiresVpn={true} />
+You need two command-line tools on your own computer. **Podman** builds and
+publishes the container images used by your workloads. The **Run:ai CLI**
+connects to Spike so you can inspect and control workloads from a terminal.
 
-Install the approved Podman and Run:ai CLI packages for your operating system
-using the current project onboarding instructions. Do not download binaries
-from an untrusted mirror or copy a CLI token into shell history.
+## Before you start
 
-## Verify the local tools
+The Run:ai CLI can only be installed through the Spike portal **after your
+account has been created and onboarding has started**. If you cannot sign in at
+[spike.run.ai](https://spike.run.ai/), return to
+[Accounts and project access](/access/accounts/) or ask your SCC AI engineer to
+check the account.
+
+Install [eduVPN](https://www.surf.nl/en/getting-started-with-eduvpn) before
+testing access from outside the TU/e network. Use your TU/e institutional
+account and the institute-access profile provided by TU/e.
+
+## Install Podman
+
+Follow the [official Podman installation
+instructions](https://podman.io/docs/installation) for Windows, macOS, or your
+Linux distribution. Download Podman only from the official project or your
+operating system's trusted package repository.
+
+On Windows and macOS, Podman runs Linux containers in a small virtual machine.
+Create and start it after installing:
+
+```bash
+podman machine init
+podman machine start
+```
+
+Linux normally runs Podman directly and does not need `podman machine`. Confirm
+that Podman is ready:
 
 ```bash
 podman version
+podman info
+```
+
+If the computer is managed by TU/e and software installation is blocked, ask
+your local IT support team to install the official package.
+
+## Install the Run:ai CLI
+
+The download is provided by your authenticated Run:ai environment, so there is
+no public Spike-specific installer link to copy ahead of time.
+
+1. Sign in at [spike.run.ai](https://spike.run.ai/).
+2. Click the **Help (`?`)** icon in the top-right corner.
+3. Select **Researcher Command Line Interface**.
+4. Select the Spike cluster and your computer's operating system.
+5. Copy the installer command and run it in your terminal. On Windows, download
+   and run the offered installer or binary.
+6. Follow the prompts and keep the recommended defaults unless your SCC AI
+   engineer has given you different settings.
+
+See NVIDIA's [Run:ai CLI installation
+guide](https://run-ai-docs.nvidia.com/self-hosted/reference/cli/install-cli)
+for screenshots, operating-system details, and troubleshooting. Verify the
+installation in a new terminal:
+
+```bash
 runai version
 ```
 
-If a command is not found, install the package through the supported operating
-system channel and open a new terminal before retrying. Record the versions in
-an experiment note when a workflow depends on CLI behavior.
+## Sign in and verify the tools
 
-## Authenticate without exposing secrets
+1. Connect [eduVPN](https://www.surf.nl/en/getting-started-with-eduvpn) when you
+   are outside the TU/e network.
+2. Run `runai login`. Complete the TU/e sign-in in the browser window that
+   opens, then return to the terminal.
+3. Confirm in the Run:ai portal that the intended project is visible before
+   submitting or changing a workload.
+4. Sign in to Harbor interactively:
 
-1. Connect EduVPN when required by your location.
-2. Sign in through the approved Run:ai browser or CLI flow and confirm the
-   intended project is selected.
-3. Authenticate Podman interactively with `podman login harbor.spike.tue.nl`.
-4. Verify access with a harmless image listing or pull of an approved image.
-5. Log out and revoke short-lived sessions when working on a shared machine.
+   ```bash
+   podman login harbor.spike.tue.nl
+   ```
+
+5. Use [Podman and Harbor](/images/podman-harbor/) to build and publish a small
+   image before preparing the real workload.
 
 :::caution
-Never put registry passwords, client secrets, or CLI tokens in a Containerfile,
-repository, ticket, notebook, or command copied into a public issue.
+Never paste registry passwords, client secrets, access tokens, or private keys
+into a Containerfile, repository, notebook, ticket, or shared command history.
 :::
 
 <NextSteps links={[
   { href: '/access/accounts/', label: 'Confirm account and project access' },
-  { href: '/images/podman-harbor/', label: 'Build and publish an image' },
+  { href: '/advanced/runai-cli/', label: 'Launch a workload with the Run:ai CLI' },
+  { href: '/images/podman-harbor/', label: 'Build and publish the first image' },
   { href: '/troubleshooting/', label: 'Resolve CLI login failures' },
 ]} />

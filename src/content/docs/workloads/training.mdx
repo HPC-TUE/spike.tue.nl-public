@@ -3,7 +3,7 @@ title: Run a training workload
 description: Submit, inspect, and clean up a first GPU training workload.
 audience: Researchers
 maturity: Verified
-lastVerified: 2026-07-14
+lastVerified: 2026-07-21
 products: [Run:ai, Harbor]
 sourceRefs: [runai_guide, torch-example, multi-gpu]
 sensitivity: public
@@ -37,7 +37,7 @@ import distributedArchitectureWebp from '../../../assets/screenshots/workload-su
 import distributedEnvironment from '../../../assets/screenshots/workload-submission/training-create-11-distributed-environment-sanitized.png';
 import distributedEnvironmentWebp from '../../../assets/screenshots/workload-submission/training-create-11-distributed-environment-sanitized.webp';
 
-<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai', 'Harbor']} />
+<DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai', 'Harbor']} />
 
 Use a **training** workload for non-interactive work that should have a clear
 command, logs, and completion state. Use an interactive workspace only when you
@@ -138,27 +138,68 @@ endpoint.
   caption="Confirm the distributed image, project, worker count, and GPU request before starting a multi-worker run."
 />
 
-## GPUs, priority, and retries
+## GPU quota, priority, and retries
 
 Start with one GPU. Request a fractional GPU only where the selected
 compute-resource preset explicitly supports it. Multi-GPU and distributed
 training require an application launcher and architecture that match the
 selected resources; test the single-GPU path first.
 
-Priority and preemptibility affect scheduling. A preemptible workload must
+### The default scheduling state
+
+All projects use the same scheduling weight. By default, all projects run in
+the over-quota state, so an ordinary GPU request does not receive a higher place
+in the queue simply because it belongs to a particular project. Over quota
+means that the project may use available capacity under the default policy; it
+is not a promise that GPUs are immediately available.
+
+### Requesting a scale-up
+
+When a project is ready for a larger run, request a temporary quota and priority
+change from the Spike administrators. Include:
+
+1. The project and workload owner.
+2. The GPU type, count, and compute-resource preset required.
+3. Why the scale-up is ready now (for example, the one-GPU run is validated).
+4. The requested start date and number of weeks for the scale-up.
+5. Expected utilization, checkpointing, and a contact for the work.
+
+The administrators decide whether to grant the additional quota. If approved,
+they grant the project GPU priority for the agreed number of weeks. This is a
+temporary scheduling window for the scale-up, not a permanent change to the
+project's allocation.
+
+### When the priority window ends
+
+At the end of the agreed period, the administrators scale the project back to
+its normal over-quota state. Plan checkpoints, evaluation, and cleanup before
+the window expires; do not assume that the temporary priority will continue.
+
+Priority does not remove workload limits or make an unsuitable request
+schedulable. The selected resource, available GPU type, workload state,
+preemptibility, and project policy still apply. A preemptible workload must
 persist checkpoints and tolerate being retried. Cancel stale test workloads and
 delete completed disposable workloads to keep project resources understandable.
 
 :::note
+For a first test, use the smallest approved resource and wait under the default
+over-quota policy. Ask for a scale-up only after the workload is reproducible
+and you can describe the required GPU window.
+:::
+
+:::note
 If a workload remains pending, inspect its selected project, image, resources,
 and data sources before changing settings. The [troubleshooting guide](/troubleshooting/)
-lists safe checks and escalation details.
+lists safe checks and escalation details; it also explains what to include when
+requesting a quota or priority review.
 :::
 
 <NextSteps links={[
-  { href: '/workloads/interactive/', label: 'Use an interactive workspace for exploration' },
+  { href: '/advanced/runai-cli/', label: 'Launch a workload with the Run:ai CLI' },
+  { href: '/access/terminal/', label: 'Connect to a running workspace' },
   { href: '/workloads/inference/', label: 'Deploy a model endpoint' },
   { href: '/workloads/lifecycle/', label: 'Understand workload states and recovery' },
   { href: '/storage/data/', label: 'Choose storage safely' },
+  { href: '/storage/file-transfer/', label: 'Transfer datasets and results' },
   { href: '/troubleshooting/', label: 'Troubleshoot a pending or failed workload' },
 ]} />

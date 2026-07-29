@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
-  <title>Spike public documentation</title>
-  <rect width="64" height="64" rx="12" fill="#c41230"/>
-  <path d="M45 18H25.5c-4.2 0-7.5 2.5-7.5 6.2 0 4.3 3.8 5.7 10.1 7.1 7.1 1.6 10.9 3.5 10.9 8.4 0 5.2-4.5 8.3-10.8 8.3H18v-5.5h9.6c2.8 0 4.2-1 4.2-2.7 0-1.9-2-2.7-7.1-3.8C17.8 34.5 12 32.1 12 25.1 12 18.8 17.3 14 25.1 14H45z" fill="#fff"/>
-</svg>

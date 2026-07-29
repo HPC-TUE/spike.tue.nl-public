@@ -1,44 +1,55 @@
 ---
 title: Accounts and project access
-description: Sign in to Spike, verify project membership, and resolve access failures.
+description: Understand your Spike-1 and Harbor access and confirm that your project is ready.
 audience: Researchers
 maturity: Verified
-lastVerified: 2026-07-14
-products: [Run:ai, Harbor]
+lastVerified: 2026-07-29
+products: [Spike-1, Run:ai, Harbor]
 requiresVpn: true
 sourceRefs: [account-setup-guide-harbor-spike, runai_guide]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
 
-<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai', 'Harbor']} requiresVpn={true} />
+After onboarding, you receive access to two connected services. **Spike-1** is
+the compute platform where your workloads run; you submit and manage that work
+through Run:ai. **Harbor** is the container registry that stores the versioned
+images used by those workloads.
 
-Open the [Run:ai portal](https://spike.run.ai/) and sign in with your TU/e
-account. Select the project that will own your workload. That project controls
-your available data sources, environments, and compute resources.
+Sign in at [spike.run.ai](https://spike.run.ai/) because Run:ai is the SaaS
+control plane connected to the TU/e cluster. `spike.tue.nl` hosts this
+documentation; it is not the cluster login. Your project connects Run:ai and
+Harbor and determines which compute resources, data sources, environments, and
+container images you can use.
 
-## Verify access
+## Check your access
 
-1. Confirm your intended project appears in the project selector.
-2. Open the Harbor registry and confirm you can see the corresponding Harbor project.
-3. If you work off campus, connect EduVPN before retrying access or terminal operations.
-4. Record the project name shown in the interfaces; use it consistently in image and workload guidance.
+1. Open [spike.run.ai](https://spike.run.ai/) and sign in with your TU/e account.
+2. Select the project created during onboarding and confirm that you can open
+   its workloads, environments, data sources, and compute resources.
+3. Open [Harbor](https://harbor.spike.tue.nl/) and confirm that the matching
+   project and its repositories are visible.
+4. Keep the project name handy. You will use the same name when tagging
+   container images and when asking SCC for help.
+5. If you are off campus, connect EduVPN before testing command-line access,
+   data transfer, or port forwarding.
 
-## If access is missing
+## When something is missing
 
-| Symptom | Safe first check | Resolution |
+| What you see | Check first | What to do next |
 | --- | --- | --- |
-| You cannot sign in | Confirm you are using your TU/e account | Request account enablement through the project support channel. |
-| Project is absent | Check the current project selector | Ask the project owner to confirm your membership and role. |
-| Harbor repository is unavailable | Confirm the Harbor project name | Request membership of the matching Harbor project. |
-| Portal works but terminal traffic fails | Check EduVPN state | Reconnect EduVPN and retry the approved terminal path. |
+| Run:ai rejects the sign-in | Confirm that you used the TU/e account included in the intake | Ask your SCC AI engineer to check whether onboarding and account activation are complete. |
+| The Run:ai project is missing | Check the project selector and the exact account you used | Send the project name and your TU/e username to your SCC contact so they can check membership and role. |
+| The Harbor project is missing | Compare its name with the Run:ai project | Ask your SCC contact to check your membership of the matching Harbor project. |
+| The web portals work, but terminal or data traffic fails | Check whether EduVPN is connected | Reconnect EduVPN and retry the same command before changing credentials or configuration. |
 
-Do not share browser sessions, registry passwords, access tokens, or private keys
-to diagnose access problems.
+When reporting an access problem, include the project name, the service that
+failed, and the approximate time. Never send browser sessions, registry
+passwords, access tokens, or private keys.
 
 <NextSteps links={[
-  { href: '/images/podman-harbor/', label: 'Build and publish an image' },
-  { href: '/troubleshooting/', label: 'Access troubleshooting' },
+  { href: '/images/podman-harbor/', label: 'Prepare and publish a container image' },
+  { href: '/storage/data/', label: 'Check project storage and data sources' },
+  { href: '/troubleshooting/', label: 'Troubleshoot another access problem' },
 ]} />

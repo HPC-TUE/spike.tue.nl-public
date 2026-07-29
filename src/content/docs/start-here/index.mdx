@@ -1,57 +1,79 @@
 ---
-title: Start here
-description: Prerequisites and the recommended learning path for a first Spike workload.
+title: Getting started
+description: How access, intake, onboarding, and your first weeks on Spike work.
 audience: New researchers
 maturity: Verified
-lastVerified: 2026-07-14
-products: [Run:ai, Harbor, Podman]
-requiresVpn: true
+lastVerified: 2026-07-29
+products: [Spike, Run:ai, Harbor]
+requiresVpn: false
 sourceRefs: [runai_guide, account-setup-guide-harbor-spike]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
-import Prerequisites from '../../../components/Prerequisites.astro';
 
-<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="New researchers" products={['Run:ai', 'Harbor', 'Podman']} requiresVpn={true} />
+Spike is not a self-service cluster where an account is created immediately
+after a form is submitted. Access starts with a conversation. The
+Supercomputing Center (SCC) first looks at the project, the workload, and the
+available capacity. If Spike is the right platform and space is available, an
+AI engineer will onboard you personally.
 
-Before creating a workload, confirm each item below. Resolving missing access
-first prevents the most common failed submissions.
+## The route onto Spike
 
-<Prerequisites title="New-user checklist">
-  <li>You are eligible to use the TU/e research-computing service.</li>
-  <li>You can sign in to the <a href="https://spike.run.ai/">Run:ai portal</a> with your TU/e account.</li>
-  <li>The intended project appears in the project selector and your role allows workload creation.</li>
-  <li>You are a member of the corresponding Harbor project and Podman is installed on your build machine.</li>
-  <li>EduVPN is connected whenever your network location requires it.</li>
-</Prerequisites>
+1. **Submit an access request.** Use the
+   [Service Desk form](https://tue.topdesk.net/tas/public/ssp/content/serviceflow?unid=93e8b8b00471499593597171aaddaf34)
+   or the [Research Cockpit](https://placeholder_research_cockpit_url/). Describe
+   the research question, the expected GPU workload, your data, and the period
+   in which you need the system.
+2. **Discuss the project with an SCC AI engineer.** During the intake, you will
+   look at eligibility, technical fit, data handling, expected scale, and
+   whether Spike offers a real advantage over another computing platform.
+3. **Receive a capacity decision.** If the project is a good fit and the cluster
+   has room, onboarding can be scheduled. If the cluster is full, SCC will put
+   the project on the waiting list rather than promise capacity that is not
+   available.
+4. **Onboard together.** Set aside part of a day with an AI engineer. You will
+   learn the Spike-specific workflow, including projects, containers, loading
+   data, storage, submitting work, and checking a running workload.
+5. **Start with an engineer nearby.** After onboarding, you will remain in close
+   contact with an SCC AI engineer while you bring up the first real workloads,
+   resolve early problems, and learn to use the system efficiently.
 
-## Recommended path
+## Come prepared
 
-| Goal | Guide |
-| --- | --- |
-| Confirm access and project membership | [Accounts and project access](/access/accounts/) |
-| Publish a reproducible environment | [Podman and Harbor](/images/podman-harbor/) |
-| Submit a first job | [Training workloads](/workloads/training/) |
-| Move data and reconnect to work | [Storage and data](/storage/data/) and [Terminal access](/access/terminal/) |
+The onboarding session teaches you how to work on Spike; it is not an
+introduction to machine learning, Linux, Python, or your research software.
+Before applying, have:
 
-## Official service context
+1. **Code that is close to runnable on HPC.** It does not need to be packaged
+   perfectly for Spike yet, but it should not still require weeks of development
+   before a meaningful test can run. SCC understands that moving into containers
+   and onto B200 GPUs takes some adjustment.
+2. **An estimate of the dataset size.** The data should be ready to transfer, and
+   you should know roughly how much needs to move onto the platform.
+3. **A project name.** Use one name consistently in the access request and during
+   onboarding.
+4. **A list of users.** Identify everyone who will need access to the project.
+5. **An understanding of data sensitivity.** Know the expected classification
+   and discuss any uncertainty with your data steward before data is transferred.
 
-For institutional context, service boundaries, and SCC announcements, see the
-[TU/e Supercomputing Spike-1 page](https://supercomputing.tue.nl/spike-1/).
-Use this wiki for the practical researcher workflow; the institutional page is
-the source for service-level announcements.
+You should also understand your own code and be comfortable working from a
+terminal. Container experience is helpful, but SCC can help translate an
+otherwise working environment into the Spike workflow.
 
-## Essential vocabulary
+The [Access and intake](/start-here/intake/) guide explains what makes a strong
+request, how SCC assesses fit, and what to prepare for the intake and onboarding
+sessions.
 
-- **Project**: the boundary for members, workloads, data sources, and allocated compute.
-- **Environment**: a reusable workload configuration that identifies an image and runtime settings.
-- **Compute resource**: a project-approved preset for GPU, CPU, and memory requests.
-- **Data source**: storage made available to a project or workload.
-- **Preemptible workload**: work that may be stopped so higher-priority work can run; it must tolerate retries.
+## Once you are onboarded
+
+Use these guides with your SCC contact while you prepare the first real run:
 
 <NextSteps links={[
-  { href: '/access/accounts/', label: 'Confirm access' },
-  { href: '/images/podman-harbor/', label: 'Publish an image' },
+  { href: '/start-here/intake/', label: 'Prepare for access and intake' },
+  { href: '/access/accounts/', label: 'Check your project access' },
+  { href: '/images/podman-harbor/', label: 'Prepare a container environment' },
+  { href: '/storage/data/', label: 'Plan and load project data' },
+  { href: '/workloads/training/', label: 'Run a training workload' },
+  { href: '/access/terminal/', label: 'Connect to a running workspace' },
 ]} />

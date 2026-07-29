@@ -1,6 +1,6 @@
 ---
 title: Spike documentation
-description: The practical path from access request to a successful GPU workload.
+description: Practical guides for getting access, preparing an environment, and running research workloads on Spike.
 template: doc
 audience: Researchers and research-support staff
 maturity: Verified
@@ -11,37 +11,38 @@ sensitivity: public
 ---
 
 import TaskLink from '../../components/TaskLink.astro';
-import DocMeta from '../../components/DocMeta.astro';
 
-Spike is a TU/e research computing environment for GPU workloads. This site is
-organized around the work you need to complete, not around product menus.
-
-<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="Researchers and research-support staff" products={['Run:ai', 'Harbor', 'Podman']} />
+Spike is TU/e's shared environment for research that needs serious GPU
+computing. It brings hardware, scheduling, project storage, and reusable
+container environments together so research teams can spend less time
+assembling infrastructure and more time running experiments.
 
 <div class="task-grid">
-  <TaskLink href="/start-here/" eyebrow="New to Spike" title="Get access" description="Check account, project, registry, and network prerequisites." />
-  <TaskLink href="/workloads/training/" eyebrow="First success" title="Run your first workload" description="Create a small training workload and follow it to completion." />
-  <TaskLink href="/images/podman-harbor/" eyebrow="Images" title="Build and push an image" description="Use Podman and Harbor to publish a reproducible environment." />
-  <TaskLink href="/access/terminal/" eyebrow="Connectivity" title="Connect to a workload" description="Forward a local port, use SSH safely, and reconnect to a running workload." />
+  <TaskLink href="/start-here/" eyebrow="Getting started" title="Get access" description="Check what you need before submitting work to Spike." />
+  <TaskLink href="/workloads/training/" eyebrow="Workloads" title="Run a training job" description="Submit a reproducible run and follow it from the queue to completion." />
+  <TaskLink href="/images/podman-harbor/" eyebrow="Containers" title="Prepare an environment" description="Package your code and dependencies with Podman and Harbor." />
+  <TaskLink href="/access/terminal/" eyebrow="Interactive work" title="Connect to a workload" description="Open a safe terminal connection to a running workspace." />
 </div>
 
-## Your first successful workload
+## Built together at TU/e
 
-1. Request access and confirm that your Run:ai project and Harbor project are visible.
-2. Build a small, versioned image with Podman and publish it to Harbor.
-3. Create a training workload in Run:ai with a modest compute-resource preset.
-4. Confirm the workload reaches **Running**, inspect its logs, and stop or delete it when finished.
+Spike is a shared university investment, made possible by EAISI and six TU/e
+departments: Mathematics and Computer Science, Electrical Engineering,
+Mechanical Engineering, Biomedical Engineering, Industrial Design, and
+Industrial Engineering & Innovation Sciences.
 
-:::tip
-For the shortest path, start with [Start here](/start-here/), then follow the
-links at the bottom of each guide. Use [Troubleshooting](/troubleshooting/) as
-soon as a workflow does not behave as expected.
-:::
+That mix matters. Spike supports work across disciplines, from medical imaging
+and scientific machine learning to design and engineering research. The TU/e
+Supercomputing Center operates the shared platform and helps turn that
+collective investment into computing researchers can use.
 
-## Service boundaries
+## What Spike provides
 
-Spike provides the platform for workloads, scheduled compute, project-scoped
-data sources, and container environments. Your project determines what you can
-run and access. The public documentation deliberately does not expose
-operational credentials, internal identifiers, or project-administration
-procedures.
+Spike provides shared GPU systems and scheduling, project-scoped data sources,
+and container-based environments. Access is organized through projects: the
+project you work in determines which data, environments, and compute resources
+you can use.
+
+This site covers the researcher-facing path, from getting access to running and
+troubleshooting workloads. Credentials, internal identifiers, quota decisions,
+and project-administration procedures stay out of the public documentation.

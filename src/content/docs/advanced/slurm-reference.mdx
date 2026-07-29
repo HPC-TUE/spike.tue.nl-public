@@ -1,22 +1,112 @@
 ---
-title: External HPC scheduler reference
-description: Historical scheduler material retained for context, not as a Spike command guide.
-audience: Researchers moving from external HPC systems
-maturity: Historical
-lastVerified: 2026-07-14
-products: [External HPC]
-sourceRefs: [wandb-slurm-sweep]
+title: From Slurm to Run:ai
+description: Translate an existing Slurm workflow into containers, Run:ai assets, and managed workloads.
+audience: Experienced HPC researchers
+maturity: Experimental
+lastVerified: 2026-07-29
+products: [Run:ai, Slurm, Podman]
+sourceRefs: [multi-gpu, wandb-slurm-sweep, AI-Benchmarking-scripts]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
 
-<DocMeta maturity="Historical" lastVerified="2026-07-14" audience="Researchers moving from external HPC systems" products={['External HPC']} />
+Spike is not a Slurm cluster. Commands such as `sbatch`, `srun`, `squeue`, and
+`module load` do not control Run:ai. Reuse the scientific application and its
+resource reasoning, then translate the scheduler-specific parts.
 
-Some source material uses scheduler commands from other HPC environments. Those
-commands are not Spike instructions. Spike workloads are created and inspected
-through Run:ai, using the project, image, compute-resource, data-source, and
-lifecycle concepts documented on this site.
+If the application fundamentally depends on Slurm, environment modules, or a
+large CPU-oriented MPI workflow, [Snellius](https://www.surf.nl/en/services/snellius-the-national-supercomputer)
+may be the better platform. See the broader [TU/e Supercomputing
+umbrella](https://supercomputing.tue.nl/) before porting the workflow.
 
-Use this page only to translate prior terminology while planning a migration.
-For a current workload, return to [Run a training workload](/workloads/training/).
+## Concept mapping
+
+| Slurm concept | Spike / Run:ai equivalent |
+| --- | --- |
+| `--account` or project allocation | Run:ai project assigned during onboarding |
+| Partition and `--gres=gpu:...` | Approved compute-resource preset |
+| `--nodes` | Distributed workload pods and worker count |
+| `--gpus-per-node` | GPU devices requested per pod |
+| `--ntasks` or tasks per node | Processes started by `torchrun`, Accelerate, or MPI |
+| `module load` | Versioned software installed in the container image |
+| Shared filesystem path | Run:ai data source or PVC mounted into the container |
+| `$SLURM_TMPDIR` | Ephemeral container or volume storage |
+| `#SBATCH --output` | Application output on persistent storage plus short-lived Run:ai logs |
+| `squeue` / `sacct` | Run:ai portal or CLI workload list and describe commands |
+| `scancel` | Suspend or delete the Run:ai workload |
+| Job array | A bounded set of workloads or approved sweep controller |
+
+The [Slurm `sbatch`
+reference](https://slurm.schedmd.com/sbatch.html) and [`srun`
+reference](https://slurm.schedmd.com/srun.html) remain useful for understanding
+the original script, but their flags cannot be pasted into Run:ai.
+
+## Translate a simple batch script
+
+A Slurm script may look like this:
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=train
+#SBATCH --gres=gpu:1
+#SBATCH --output=logs/%x-%j.out
+
+module load Python CUDA
+srun python train.py --epochs 10
+```
+
+On Spike:
+
+1. Put Python, CUDA-compatible libraries, and the application in a versioned
+   image.
+2. Replace the Slurm allocation flags with the project and compute-resource
+   preset approved by your SCC AI Engineer.
+3. Attach project data and output storage as Run:ai data sources.
+4. Launch the application as a standard training workload:
+
+   ```bash
+   runai training standard submit train \
+     --project PROJECT_NAME \
+     --environment ENVIRONMENT_NAME \
+     --compute COMPUTE_RESOURCE_NAME \
+     --command -- python /workspace/train.py --epochs 10
+   ```
+
+5. Follow the workload through the Run:ai portal or CLI and save logs before
+   they disappear after completion or failure.
+
+Use [Launch workloads with the Run:ai CLI](/advanced/runai-cli/) for a complete
+submission and cleanup workflow.
+
+## Translate multi-node jobs carefully
+
+Do not translate `--nodes`, `--ntasks-per-node`, and `--gpus-per-node`
+independently. Together they describe a process topology:
+
+- Run:ai must create the agreed number of participating pods.
+- Each pod must request the agreed GPUs.
+- The launcher must start the matching local processes.
+- Every process needs a unique rank and the same world size.
+- Data and checkpoints must be reachable from every pod.
+
+Use [Multi-GPU and multi-node training](/advanced/multi-gpu/) and NVIDIA's
+[distributed PyTorch tutorial for
+Run:ai](https://run-ai-docs.nvidia.com/saas/tutorials/training-tutorials/distributed-pytorch).
+Do not copy `NCCL_SOCKET_IFNAME`, hostnames, rendezvous addresses, or fabric
+settings from Snellius; those values are cluster-specific.
+
+## Translate arrays and sweeps
+
+A Slurm array controls parallelism at the scheduler. A W&B sweep or Python
+launcher controls experiments, but every concurrent trial still consumes a
+Run:ai workload and project capacity. Agree on the maximum parallel trials and
+compute resource with your SCC AI Engineer. Start with two short trials and
+confirm that failures, checkpoints, and run IDs remain separate.
+
+<NextSteps links={[
+  { href: '/images/podman-harbor/', label: 'Move modules into a container image' },
+  { href: '/advanced/runai-cli/', label: 'Submit the translated workload' },
+  { href: '/advanced/multi-gpu/', label: 'Translate a distributed topology' },
+  { href: '/advanced/experiment-tracking/', label: 'Replace output files with run tracking' },
+]} />

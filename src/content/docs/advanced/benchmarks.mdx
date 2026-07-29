@@ -1,32 +1,135 @@
 ---
-title: Benchmarking and performance reports
-description: Record benchmark methodology so results remain reproducible and appropriately scoped.
+title: Reproducible benchmarking
+description: Measure training or inference performance with a repeatable protocol and honest limitations.
 audience: Experienced researchers
 maturity: Experimental
-lastVerified: 2026-07-14
-products: [Run:ai, Prometheus]
-sourceRefs: [AI-Benchmarking-scripts, inferencing-benchmark, sharepoint]
+lastVerified: 2026-07-29
+products: [Run:ai, PyTorch, NVIDIA]
+sourceRefs: [AI-Benchmarking-scripts, inferencing-benchmark]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
 
-<DocMeta maturity="Experimental" lastVerified="2026-07-14" audience="Experienced researchers" products={['Run:ai', 'Prometheus']} />
+A useful benchmark answers a narrow question under recorded conditions. It is
+not a timeless claim about Spike, a GPU model, or a serving engine. Shared
+cluster load, software versions, input shape, precision, caching, and the
+selected resource all affect the result.
 
-Benchmark results are observations of one configuration, not a promise of
-timeless capacity. Publish the conditions with the result.
+:::caution
+Do not increase GPU count, worker count, priority, or compute resources to run a
+benchmark without SCC AI Engineer approval. Coordinate sustained load tests so
+they do not disrupt other projects.
+:::
 
-## Required record
+## Define the question first
 
-| Field | Record |
+Examples of answerable questions:
+
+- Does this input pipeline keep one approved GPU busy?
+- Does four-GPU DDP reduce time per epoch for this fixed model and dataset?
+- Does a new image tag improve median latency without changing numerical output?
+- At what concurrency does an SCC-managed inference endpoint exceed its agreed
+  latency target?
+
+Choose one primary metric before collecting results. Common metrics include
+step time, samples per second, tokens per second, time to first token, peak GPU
+memory, and end-to-end job duration.
+
+## Freeze the test conditions
+
+Record these fields with every result:
+
+| Area | Required record |
 | --- | --- |
-| Hardware | GPU model/count, CPU, memory, node class, and allocation |
-| Software | Image tag, driver/runtime, framework, libraries, and versions |
-| Workload | Command, batch size, precision, dataset or synthetic input |
-| Method | Warm-up, repetitions, measurement window, and metric definition |
-| Date | Run date and platform state |
-| Limits | Variance, failed runs, bottlenecks, and what was not measured |
+| Workload | Run:ai project, workload name, date, compute-resource preset, GPU and worker count |
+| Software | Immutable image tag, code revision, framework, CUDA, driver, and library versions |
+| Model | Model revision, precision, compilation settings, sequence or input shape |
+| Data | Dataset version, sample count, preprocessing, cache state, and data location |
+| Method | Warm-up, measured iterations, repeats, synchronization, concurrency, and summary statistic |
+| Result | Raw observations, median or percentile, variance, failures, and known limitations |
 
-Keep raw outputs and scripts in the approved project storage. A benchmark that
-does not include these fields should remain an internal experiment rather than
-be presented as a platform comparison.
+Capture the software and visible GPU environment inside the workload:
+
+```bash
+python -m torch.utils.collect_env
+nvidia-smi \
+  --query-gpu=name,uuid,driver_version,memory.total \
+  --format=csv
+```
+
+NVIDIA documents all supported [`nvidia-smi`
+queries](https://docs.nvidia.com/deploy/nvidia-smi/index.html). Do not change
+GPU clocks, power limits, MIG layout, or other administrative settings.
+
+## Use a repeatable timing method
+
+For a small PyTorch operation, use
+[`torch.utils.benchmark`](https://docs.pytorch.org/tutorials/recipes/recipes/benchmark.html)
+rather than a single wall-clock measurement:
+
+```python
+from torch.utils.benchmark import Timer
+
+measurement = Timer(
+    stmt="model(batch)",
+    globals={"model": model, "batch": batch},
+).blocked_autorange(min_run_time=2.0)
+
+print(measurement)
+```
+
+For a full training loop:
+
+1. Warm up model loading, kernels, data workers, and caches.
+2. Synchronize CUDA before starting and stopping a manual timer.
+3. Measure enough steps to include normal input and checkpoint behavior.
+4. Repeat the complete run at least three times when cost permits.
+5. Preserve raw samples and report median plus spread, not only the best run.
+
+Use [NVIDIA Nsight
+Systems](https://docs.nvidia.com/nsight-systems/UserGuide/index.html) only when
+timeline-level CPU, CUDA, or I/O profiling is required. Profiling adds overhead,
+so keep profiled runs separate from performance runs.
+
+## Measure distributed scaling
+
+Compare the same work at one GPU and at the approved larger topology:
+
+```text
+speedup = single_gpu_time / distributed_time
+efficiency = speedup / number_of_gpus
+```
+
+Keep the global batch size fixed when measuring strong scaling. State clearly
+when the batch size grows with GPU count, because that is weak scaling and
+answers a different question. Include checkpoint time and data loading; hiding
+them overstates application throughput.
+
+## Inference load tests
+
+Inference benchmarks must use an endpoint and concurrency limit agreed with the
+SCC AI Engineer who manages the deployment. Record:
+
+- Prompt and generated-token length distributions.
+- Concurrency and arrival pattern.
+- Warm versus cold cache state.
+- Time to first token, inter-token latency, end-to-end latency, and throughput.
+- Error, timeout, and rate-limit counts.
+
+Do not upload sensitive prompts or outputs to a third-party benchmark service.
+Do not present a result from one model, image, or date as a general platform
+guarantee.
+
+## Reporting template
+
+Publish the exact command, configuration, raw measurements, and limitations
+with the chart or table. A short report should let another project member rerun
+the same image and understand why a future result may differ.
+
+<NextSteps links={[
+  { href: '/advanced/experiment-tracking/', label: 'Store benchmark runs and metadata' },
+  { href: '/advanced/multi-gpu/', label: 'Measure distributed scaling' },
+  { href: '/workloads/lifecycle/', label: 'Preserve logs and outputs' },
+  { href: '/support/', label: 'Coordinate a sustained benchmark' },
+]} />

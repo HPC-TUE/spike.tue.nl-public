@@ -3,7 +3,7 @@ title: Build and publish images with Podman
 description: Create a reproducible Containerfile, build it with Podman, and publish it to Harbor.
 audience: Researchers
 maturity: Verified
-lastVerified: 2026-07-14
+lastVerified: 2026-07-21
 products: [Podman, Harbor]
 sourceRefs: [container, account-setup-guide-harbor-spike]
 sensitivity: public
@@ -12,7 +12,7 @@ sensitivity: public
 import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
 
-<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="Researchers" products={['Podman', 'Harbor']} />
+<DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Podman', 'Harbor']} />
 
 Use Podman to create images that are reproducible, project-scoped, and easy to
 trace. Choose a CUDA base image that matches your workload requirements, install
@@ -40,7 +40,8 @@ secret mechanism instead.
 ## Build and push
 
 1. Sign in interactively: `podman login harbor.spike.tue.nl`.
-2. Download [the canonical build-and-push script](/downloads/push-to-harbor.sh).
+2. Open <a href="/downloads/push-to-harbor.sh" target="_blank" rel="noreferrer">the
+   canonical build-and-push script</a> in a new tab and save it locally.
 3. Run `bash push-to-harbor.sh CONTAINER_NAME HARBOR_PROJECT VERSION Containerfile`.
 
 The script validates its four arguments, builds `linux/amd64`, and publishes:
@@ -52,6 +53,22 @@ harbor.spike.tue.nl/HARBOR_PROJECT/CONTAINER_NAME:VERSION
 Use immutable version tags such as `1.0.0` or a revision identifier. Do not
 overwrite a tag that another workload may need for reproducibility. Update a
 workload environment only after the new tag is visible in Harbor.
+
+### SSH-container example location
+
+The approved SSH file-transfer example is published in this site under
+`/downloads/ssh-container/`. Start with the <a
+href="/downloads/ssh-container/Containerfile" target="_blank"
+rel="noreferrer">SSH-container Containerfile</a>, then keep the matching <a
+href="/downloads/ssh-container/sshd_config" target="_blank"
+rel="noreferrer">SSH configuration</a>, <a
+href="/downloads/ssh-container/start-sshd.sh" target="_blank"
+rel="noreferrer">startup script</a>, and <a
+href="/downloads/ssh-container/README.md" target="_blank"
+rel="noreferrer">README</a> in the same build directory. Each example opens in
+a new tab. The [File transfer guide](/storage/file-transfer/) explains how to
+build it, select a CPU-only workspace, mount `/data`, and use Run:ai port
+forwarding with `scp`.
 
 ## Common failures
 

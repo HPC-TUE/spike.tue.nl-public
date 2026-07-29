@@ -1,38 +1,143 @@
 ---
-title: Accelerate and distributed training
-description: An experimental route from a tested single-node launcher to distributed training.
+title: Accelerate and FSDP
+description: Launch tested PyTorch training code with Hugging Face Accelerate and progress safely toward FSDP.
 audience: Experienced researchers
 maturity: Experimental
-lastVerified: 2026-07-14
-products: [Run:ai, Accelerate]
-sourceRefs: [Run-ai-accelerate-example, accelerate-example, Torch-Elastic, multi-gpu]
+lastVerified: 2026-07-29
+products: [Run:ai, Accelerate, FSDP]
+sourceRefs: [Run-ai-accelerate-example, accelerate-example, multi-gpu]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
+import ScreenshotFigure from '../../../components/ScreenshotFigure.astro';
 import NextSteps from '../../../components/NextSteps.astro';
+import environmentSelection from '../../../assets/screenshots/workload-submission/training-create-03-container-environment-sanitized.png';
+import environmentSelectionWebp from '../../../assets/screenshots/workload-submission/training-create-03-container-environment-sanitized.webp';
 
-<DocMeta maturity="Experimental" lastVerified="2026-07-14" audience="Experienced researchers" products={['Run:ai', 'Accelerate']} />
+[Hugging Face Accelerate](https://huggingface.co/docs/accelerate/index) adapts a
+PyTorch training loop to different device layouts and launches the required
+processes. Run:ai still schedules the pod or pods, mounts data, and allocates
+the approved GPUs; Accelerate does not request cluster resources by itself.
 
-Start with a verified one-GPU training workload and a pinned image. Then use an
-Accelerate launch command that matches the GPU count exposed by the selected
-compute resource. Capture logs, world size, package versions, and the exact
-image tag for every run.
+## Adapt the training code
 
-## Tested progression
+At minimum, create one `Accelerator`, prepare the model, optimizer, dataloader,
+and scheduler, and use `accelerator.backward(loss)`. The official [Accelerate
+quick tour](https://huggingface.co/docs/accelerate/quicktour) shows the complete
+code changes.
 
-1. Run the training command on one GPU and save a checkpoint.
-2. Request the intended multi-GPU resource only after the single-GPU run is reproducible.
-3. Configure the distributed launcher for the actual process count and visible devices.
-4. Confirm every process starts, writes a single coherent log stream, and can restore a checkpoint.
+Keep rank-sensitive work behind the Accelerate helpers:
 
-## Untested material
+```python
+from accelerate import Accelerator
 
-The migrated gradient-accumulation example is retained as an **Experimental**
-reference. Do not treat it as a confirmed Spike recipe until it has been tested
-with a current image, resource preset, and recovery path.
+accelerator = Accelerator()
+
+model, optimizer, train_loader = accelerator.prepare(
+    model, optimizer, train_loader
+)
+
+for batch in train_loader:
+    optimizer.zero_grad()
+    loss = model(**batch).loss
+    accelerator.backward(loss)
+    optimizer.step()
+
+accelerator.wait_for_everyone()
+if accelerator.is_main_process:
+    save_final_metadata()
+```
+
+The checkpoint must include enough state to resume the experiment, including
+the model, optimizer, scheduler, current step or epoch, and random state where
+the application depends on it.
+
+## Pin the Accelerate configuration
+
+Generate a configuration with `accelerate config`, review it, and store the
+result with the code. A single-node, four-GPU configuration has this general
+shape:
+
+```yaml
+compute_environment: LOCAL_MACHINE
+distributed_type: MULTI_GPU
+machine_rank: 0
+main_process_ip: null
+main_process_port: null
+mixed_precision: bf16
+num_machines: 1
+num_processes: 4
+use_cpu: false
+```
+
+The `num_processes` value must match the GPUs allocated to the pod. Do not copy
+`bf16`, the process count, or any FSDP option without validating that it matches
+the model, image, and approved compute resource.
+
+## Configure the Run:ai workload
+
+1. Build an immutable image containing the training code, Accelerate version,
+   configuration file, and dependencies.
+2. Create or select a Run:ai environment for that image.
+3. Under **Runtime settings**, set the tested command explicitly:
+
+   ```bash
+   accelerate launch \
+     --config_file /workspace/config/accelerate.yaml \
+     /workspace/train.py \
+     --epochs 1
+   ```
+
+4. Select the approved compute-resource preset whose GPU count matches
+   `num_processes`.
+5. Mount persistent data and checkpoint paths.
+6. Run a short test and verify that only the main process writes shared output.
+
+<ScreenshotFigure
+  src={environmentSelection.src}
+  webp={environmentSelectionWebp.src}
+  alt="Run:ai environment panel with a synthetic image and the Runtime settings section visible"
+  caption="The image, command, arguments, environment variables, and credentials belong together in the Run:ai environment. Add secrets through approved credentials, never the command field."
+/>
+
+The current [Accelerate launcher
+guide](https://huggingface.co/docs/accelerate/main/basic_tutorials/launch)
+documents `--config_file`, multi-GPU, mixed precision, and multi-node launch
+parameters.
+
+## Progress to FSDP
+
+FSDP is useful when a model or optimizer state does not fit comfortably on one
+GPU. It adds sharding, wrapping, mixed-precision, and checkpoint decisions that
+must be tested together.
+
+1. Keep the same single-GPU baseline and expected result.
+2. Add an FSDP configuration generated for the installed Accelerate version.
+3. Validate a short single-node multi-GPU run.
+4. Save and reload a sharded checkpoint.
+5. Compare convergence and effective global batch size with the baseline.
+6. Attempt multi-node only after review with your SCC AI Engineer.
+
+Use the official [Accelerate FSDP
+guide](https://huggingface.co/docs/accelerate/usage_guides/fsdp) and PyTorch
+[Distributed Checkpoint
+guide](https://docs.pytorch.org/tutorials/recipes/distributed_checkpoint_recipe.html)
+for current configuration and checkpoint APIs.
+
+:::caution
+Changing `num_processes` or `num_machines` does not allocate more hardware.
+Run:ai resources and the Accelerate topology must agree. Do not change GPU,
+worker, priority, or preemptibility settings without SCC AI Engineer approval.
+:::
+
+For multi-node work, follow [Multi-GPU and multi-node
+training](/advanced/multi-gpu/). The launcher must run on every participating
+pod with coordinated ranks and rendezvous settings; a single-node Accelerate
+configuration is not sufficient.
 
 <NextSteps links={[
-  { href: '/workloads/training/', label: 'Revisit the verified training path' },
-  { href: '/troubleshooting/', label: 'Resolve distributed startup failures' },
+  { href: '/advanced/multi-gpu/', label: 'Configure the Run:ai topology' },
+  { href: '/advanced/experiment-tracking/', label: 'Add TensorBoard or W&B' },
+  { href: '/advanced/benchmarks/', label: 'Measure scaling efficiency' },
+  { href: '/workloads/lifecycle/', label: 'Plan checkpointing and recovery' },
 ]} />

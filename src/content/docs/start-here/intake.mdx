@@ -1,0 +1,136 @@
+---
+title: Access and intake
+description: Prepare a strong Spike request and know what to expect from intake and onboarding.
+audience: Prospective Spike users and project leads
+maturity: Verified
+lastVerified: 2026-07-29
+products: [Spike]
+requiresVpn: false
+sourceRefs: [runai_guide, account-setup-guide-harbor-spike]
+sensitivity: public
+---
+
+import NextSteps from '../../../components/NextSteps.astro';
+
+Access to Spike begins with a project discussion, not an account checklist. The
+SCC uses the intake to understand whether Spike is the right platform, whether
+the project is ready to use it, and whether capacity is available during the
+requested period.
+
+## Submit the request
+
+Apply through either:
+
+- The [TU/e Service Desk form](https://tue.topdesk.net/tas/public/ssp/content/serviceflow?unid=93e8b8b00471499593597171aaddaf34);
+- The [Research Cockpit](https://placeholder_research_cockpit_url/).
+
+A useful request gives the AI engineer enough context for a productive first
+conversation. Include:
+
+- The research goal and the TU/e department or institute involved;
+- A proposed project name;
+- The people responsible for the project and the full list of users who will
+  need access;
+- What the code does today, where it currently runs, and how close it is to a
+  meaningful HPC test;
+- The expected number and type of GPUs, run duration, and rough project window;
+- The estimated dataset size, its current location, whether it is ready to
+  transfer, and its expected sensitivity classification;
+- The software stack and whether a working container already exists;
+- Why Spike may be a better fit than the resources you already use.
+
+Exact numbers are not required at this stage. A reasoned estimate is more useful
+than an ambitious guess.
+
+## Is Spike the right fit?
+
+Spike is TU/e's most capable GPU platform. It is intended for work that benefits
+from capabilities such as:
+
+- Distributed training across several GPUs or nodes;
+- Unusually large GPU-memory requirements;
+- Blackwell-specific features such as driver-level FP4 precision;
+- The NVIDIA AI Enterprise software stack;
+- GPU Direct Storage and high-throughput data pipelines;
+- Container-based research workflows;
+- Runs that exceed the practical capacity or time limits of other available
+  platforms.
+
+A project does not need to meet every condition. The intake is where SCC and the
+research team decide whether the expected benefit justifies using scarce Spike
+capacity. A workload that runs comfortably on one conventional GPU may be
+better served elsewhere.
+
+For the current institutional criteria, see
+[Is Spike-1 the right fit for your project?](https://supercomputing.tue.nl/spike-1/#is-spike-1-the-right-fit-for-your-project).
+
+## The intake conversation
+
+An SCC AI engineer will discuss the research objective, technical readiness,
+data, software environment, required scale, and project schedule with you. The
+conversation is collaborative: its purpose is to find the right computing route
+and to make sure a Spike allocation can be used well.
+
+The outcome is one of three practical next steps:
+
+1. **Onboarding is scheduled** when the project is eligible, ready, and capacity
+   is available.
+2. **The project joins the waiting list** when it is a good fit but the cluster
+   is full during the requested period.
+3. **Another route is recommended** when
+   [Snellius](https://www.surf.nl/en/services/compute/snellius-the-national-supercomputer),
+   the [TU/e Umbrella cluster](https://supercomputing.tue.nl/), or
+   [SURF Research Cloud](https://www.surf.nl/en/services/compute/surf-research-cloud)
+   better matches the workload, or when the project needs more preparation
+   first.
+
+## Prepare for onboarding
+
+Onboarding takes part of a day and is a working session with an AI engineer.
+Come with:
+
+- Code you understand and can run in a known environment, close enough to HPC
+  readiness that a meaningful test does not depend on weeks of further
+  development;
+- The dataset you plan to use, ready to transfer, with its size and sensitivity
+  classification understood;
+- The agreed project name and complete list of users;
+- An estimate of the full dataset size and a confirmed sensitivity
+  classification;
+- The command or entry point for a small test run;
+- A list of required packages, system libraries, and accelerator dependencies;
+- A plan for durable input, output, and long-term storage;
+- Enough Linux and terminal experience to diagnose your own application.
+
+Together you will cover the Spike-specific parts: project access, Harbor and
+containers, storage and data transfer, Run:ai environments, resource selection,
+workload submission, logs, and cleanup. Some adjustment to containers and the
+B200 GPUs is expected; that is part of the onboarding work.
+
+## Data and access window
+
+Spike access is granted for a defined project window. Plan how results and other
+important data will leave the platform before that window closes.
+
+Also account for Spike's quarterly maintenance period. The system is unavailable
+for approximately one to two weeks, with dates planned and communicated in
+advance together with active users.
+
+Do not bring non-anonymized or non-pseudonymized personal data, direct end-user
+data processing, or data above the permitted sensitivity level to Spike. Confirm
+the classification and handling plan with your data steward before onboarding.
+
+## Support after onboarding
+
+The handover does not end when an account works. An SCC AI engineer remains the
+technical contact while the team starts its first workloads. Use that contact
+to review resource choices, container and data-flow problems, failed or slow
+runs, and opportunities to use the system more efficiently.
+
+<NextSteps links={[
+  { href: '/access/accounts/', label: 'Check project access after onboarding' },
+  { href: '/images/podman-harbor/', label: 'Prepare the workload environment' },
+  { href: '/storage/data/', label: 'Plan project storage' },
+  { href: '/storage/file-transfer/', label: 'Load data onto the platform' },
+  { href: '/workloads/training/', label: 'Submit a training workload' },
+]} />

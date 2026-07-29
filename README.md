@@ -121,6 +121,12 @@ path such as `/downloads/example/Containerfile`. Reuse `DocMeta`, `NextSteps`,
 `TaskLink`, and the other existing components instead of introducing a new
 layout for one page.
 
+The public SSH file-transfer example is at
+`public/downloads/ssh-container/Containerfile` with its matching
+`sshd_config`, `start-sshd.sh`, and `README.md`. It is published at
+`/downloads/ssh-container/` and documented in the [File transfer](/storage/file-transfer/)
+guide.
+
 ### Check Your Changes
 
 From this repository, run:

@@ -1,0 +1,180 @@
+---
+title: File transfer
+description: Move data through the internet, S3-compatible storage, or a PVC-mounted SSH workspace.
+audience: Researchers
+maturity: Experimental
+lastVerified: 2026-07-21
+products: [Run:ai, SSH, S3, s3cmd, Cyberduck, Podman]
+requiresVpn: true
+sourceRefs: [runai_guide, SSH-container, ssh-container-gitlab, spike-1-automation]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Experimental" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai', 'SSH', 'S3', 's3cmd', 'Cyberduck', 'Podman']} requiresVpn={true} />
+
+Choose the transfer path based on where the data starts and how long it must
+live. You do not need to copy data through your laptop when the workload can
+download it directly.
+
+| Data source | Recommended path | Where the result lives |
+| --- | --- | --- |
+| Public internet | Download from inside the running workload | The path you choose, normally a PVC such as `/data` |
+| S3-compatible object storage | Use an S3 client from inside the workload | The bucket, or a PVC after an explicit sync |
+| Your laptop or workstation | Use the SSH-container and `scp` | The mounted PVC, not the image filesystem |
+| Temporary intermediate files | Use the container filesystem or an ephemeral volume | Disposable; keep no unique copy there |
+
+## Download directly from the internet
+
+Spike workloads can make outbound internet requests. For public datasets and
+packages, run the download from inside the workload instead of uploading the
+same data through `scp`:
+
+```bash
+mkdir -p /data/datasets
+curl --fail --location --retry 3 \
+  --output /data/datasets/dataset.zip \
+  https://data.example.org/dataset.zip
+```
+
+The example URL is a placeholder. Check the dataset licence and the source's
+terms before downloading. Save the result to a PVC or another durable location
+if it must survive a workload restart. Internet access can be restricted by
+the service policy or by the remote site; an HTTP failure is not evidence that
+the PVC is unavailable.
+
+## Use S3-compatible object storage
+
+An S3 bucket is object storage, not a directory automatically mounted into a
+container. A project must have a bucket and an approved credential workflow.
+Request the project endpoint, bucket name, region, and credential method from
+[support](/support/) or the project administrator; do not put temporary values
+in this documentation.
+
+S3 transfers can run from inside a workload (S3 to a PVC) or from your own
+computer (S3 to a local folder). Neither path requires an SSH port-forward.
+
+### With `s3cmd`
+
+Install `s3cmd` on the machine that will perform the transfer. Download the
+[Spike `s3cfg` example](/downloads/s3cfg.example), replace both `XXXX`
+placeholders with credentials supplied through the approved project process,
+and save it as `~/.s3cfg`:
+
+```bash
+cp s3cfg.example ~/.s3cfg
+chmod 600 ~/.s3cfg
+```
+
+The example is configured for `s3.spike.tue.nl`, virtual-hosted bucket names,
+HTTPS, the `eu-west-1` location, and the S3 signature mode currently required
+by Spike. Do not replace `host_bucket` with a path containing a UID.
+
+If you prefer the interactive setup, `s3cmd --configure` must produce the same
+endpoint, bucket-host, region, HTTPS, and signature settings.
+
+Test the connection before moving a large dataset:
+
+```bash
+s3cmd ls s3://BUCKET_NAME/
+```
+
+Sync a bucket prefix into a PVC from inside a running workload:
+
+```bash
+s3cmd sync s3://BUCKET_NAME/datasets/ /data/datasets/
+```
+
+Or upload a local folder from your workstation:
+
+```bash
+s3cmd sync ./local-dataset/ s3://BUCKET_NAME/datasets/
+```
+
+The `s3cmd` configuration contains credentials. Keep it private and do not
+commit it, paste it into a ticket, or copy it into an image.
+
+### With Cyberduck
+
+Cyberduck is useful when you prefer a graphical file browser:
+
+1. Choose **Open Connection** or **New Bookmark**.
+2. Select **Amazon S3** (the generic S3 profile also works for S3-compatible
+   services).
+3. Enter `s3.spike.tue.nl` as **Server**. Do not include the bucket or a UID in
+   the server field.
+4. Enter the project **Access Key ID** and **Secret Access Key**.
+5. Connect, open `BUCKET_NAME`, and drag files or folders to upload/download.
+
+If the project endpoint only supports path-style requests, select Cyberduck's
+S3 path-style profile or option as directed by the project administrator. Do
+not share a bookmark that contains credentials.
+
+S3 objects remain available independently of any one workload. `/data` only
+contains a copy after you explicitly download or sync the objects there.
+
+## Transfer from a laptop with the SSH container
+
+Use this path when data is on your workstation and no direct internet or S3
+source is available. The main build file is the downloadable
+[SSH-container Containerfile](/downloads/ssh-container/Containerfile). The
+bundle also includes the [SSH configuration](/downloads/ssh-container/sshd_config),
+[startup script](/downloads/ssh-container/start-sshd.sh), and an accompanying
+[README](/downloads/ssh-container/README.md) explaining how to add your public
+key and build the image with Podman.
+
+The example runs a non-root SSH service on port `2222`. Create an **Interactive
+workspace** with that image, select a CPU-only compute resource, and mount the
+project PVC at `/data`. Do not request a GPU solely for data transfer.
+
+1. Confirm the workspace is **Running**.
+2. Keep the port-forward open in one terminal:
+
+   ```bash
+   runai workspace port-forward WORKLOAD_NAME \
+     --project PROJECT_NAME \
+     --port 2222:2222
+   ```
+
+3. Upload data from a second terminal:
+
+   ```bash
+   scp -P 2222 -i ~/.ssh/id_ed25519 -r ./local-data \
+     developer@localhost:/data/
+   ```
+
+4. Download results when needed:
+
+   ```bash
+   scp -P 2222 -i ~/.ssh/id_ed25519 -r \
+     developer@localhost:/data/results ./results
+   ```
+
+Keep the forwarding terminal open during SSH or SCP. Use `scp` for deliberate
+transfers; for large datasets prefer a direct internet download or S3 sync
+from inside the workload.
+
+## Where the files go
+
+The container filesystem is temporary runtime state. It is suitable for caches
+and scratch work, but a new workload, image update, retry, or deletion can give
+you a fresh filesystem.
+
+The `/data` path is durable only when it is backed by the intended PVC. Verify
+the mount before transferring irreplaceable data:
+
+```bash
+findmnt /data 2>/dev/null || mount | grep ' /data '
+df -h /data
+```
+
+If `/data` is not mounted from a PVC, treat it as temporary. Keep a second copy
+of irreplaceable data according to project policy.
+
+<NextSteps links={[
+  { href: '/storage/data/', label: 'Understand storage lifecycles' },
+  { href: '/access/terminal/', label: 'Connect to a running workload' },
+  { href: '/troubleshooting/', label: 'Troubleshoot a transfer failure' },
+]} />

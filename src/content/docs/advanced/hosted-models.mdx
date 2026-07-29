@@ -1,65 +1,95 @@
 ---
-title: Hosted models and inference endpoints
-description: Discover hosted model targets, authenticate safely, and account for usage.
+title: Hosted models
+description: Use an SCC-managed model endpoint without managing the inference deployment yourself.
 audience: Researchers
 maturity: Experimental
-lastVerified: 2026-07-14
-products: [Run:ai, vLLM, Open WebUI, Podman]
-sourceRefs: [spike-hosting, inferencing-benchmark, model-metrics-monitor]
+lastVerified: 2026-07-29
+products: [Run:ai, vLLM, Open WebUI]
+sourceRefs: [inferencing, hosted-models, spike-hosting]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
 
-<DocMeta maturity="Experimental" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai', 'vLLM', 'Open WebUI', 'Podman']} />
+Hosted models are inference deployments operated by SCC AI Engineers. You may
+be given access to an endpoint or user interface, but you must not create,
+resize, restart, reconfigure, or delete the underlying inference workload.
 
-Hosted-model availability, limits, and accounting can change. Check the
-currently published target list and project policy at the time of use; do not
-hard-code a model name, quota, or availability claim into a paper or image.
+Availability, model revisions, request limits, and accounting can change. Ask
+your SCC AI Engineer which endpoint and model are approved for the project
+instead of copying an identifier from another project or an old example.
 
-## Safe usage pattern
+## Before sending a request
 
-1. Confirm that your project is allowed to use the target and understand how usage is accounted.
-2. Authenticate through the approved researcher-safe flow; never copy a client secret into a notebook or image.
-3. Discover the target and supported model identifiers from the service response.
-4. Use the documented OpenAI-compatible request shape only after confirming endpoint and model availability.
-5. Record model identifier, date, request limits, and software version with benchmark results.
+Confirm:
 
-Open WebUI or a Podman-based client can be used only when its connection is
-configured through the same approved credential flow. Hosted-model monitoring
-and target provisioning remain admin operations.
+1. The model is approved for the intended research purpose.
+2. The input and output data are allowed to be processed by this service.
+3. The endpoint, authentication method, and request limits came from the SCC
+   onboarding or support channel.
+4. The client will not log tokens, sensitive prompts, or model responses.
+5. A small harmless request succeeds before starting a batch or benchmark.
 
-## Discovery and OpenAI-compatible requests
+:::caution
+An access token is a secret. Keep it out of notebooks, repositories, images,
+tickets, screenshots, and shared terminal history. Use the approved credential
+mechanism and rotate a token that may have been exposed.
+:::
 
-Use the endpoint and token issued by the approved researcher workflow. Keep
-both values in the local environment rather than in a notebook or repository.
+## Discover available model identifiers
+
+For an OpenAI-compatible endpoint, keep the issued values in local environment
+variables:
 
 ```bash
 export HOSTED_MODEL_BASE_URL='https://approved-endpoint.example/v1'
 export HOSTED_MODEL_TOKEN='provided-through-the-approved-flow'
+```
+
+List the models currently exposed by that endpoint:
+
+```bash
 curl --fail --silent \
   -H "Authorization: Bearer ${HOSTED_MODEL_TOKEN}" \
   "${HOSTED_MODEL_BASE_URL}/models"
 ```
 
-The model list is the source of truth for currently available identifiers. A
-minimal OpenAI-compatible request follows the service documentation:
+Use only an identifier returned by discovery and approved for the project.
+
+## Send a small request
 
 ```bash
 curl --fail --silent \
   -H "Authorization: Bearer ${HOSTED_MODEL_TOKEN}" \
   -H 'Content-Type: application/json' \
   "${HOSTED_MODEL_BASE_URL}/chat/completions" \
-  -d '{"model":"MODEL_FROM_DISCOVERY","messages":[{"role":"user","content":"health check"}]}'
+  -d '{
+    "model": "MODEL_FROM_DISCOVERY",
+    "messages": [
+      {"role": "user", "content": "Return the word ready."}
+    ]
+  }'
 ```
 
-Replace the placeholder model only after discovery succeeds. Check response
-limits and usage accounting in the current project policy before running a
-large benchmark. Open WebUI and Podman clients must be configured with the
-same base URL and short-lived token flow; do not put credentials in an image.
+Set an application timeout and handle rate limits and service errors. Do not
+retry indefinitely. Large batches and load tests require prior coordination
+with the SCC AI Engineer managing the endpoint.
+
+The backend may use [vLLM's OpenAI-compatible
+server](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html),
+but the SCC-provided endpoint and policy remain authoritative. When access is
+provided through Open WebUI, use its [official user
+documentation](https://docs.openwebui.com/) and the SCC-issued sign-in flow.
+
+## What to report when requesting help
+
+Share the time of the request, the endpoint hostname, model identifier, HTTP
+status, and a redacted error message. Do not include the bearer token or
+sensitive prompt content. SCC AI Engineers can inspect and change the
+deployment; researchers should not attempt to repair it through Run:ai.
 
 <NextSteps links={[
-  { href: '/advanced/benchmarks/', label: 'Record a reproducible benchmark' },
-  { href: '/support/', label: 'Ask about target access' },
+  { href: '/workloads/inference/', label: 'Understand inference ownership' },
+  { href: '/advanced/benchmarks/', label: 'Plan an approved endpoint benchmark' },
+  { href: '/support/', label: 'Request access or report a problem' },
 ]} />

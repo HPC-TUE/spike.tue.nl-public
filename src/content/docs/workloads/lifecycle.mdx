@@ -3,26 +3,42 @@ title: Workload lifecycle, logs, and cleanup
 description: Interpret workload states, inspect logs, retry safely, and clean up.
 audience: Researchers
 maturity: Verified
-lastVerified: 2026-07-14
+lastVerified: 2026-07-29
 products: [Run:ai]
 sourceRefs: [runai_guide, spike-1-cleanup]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
-
-<DocMeta maturity="Verified" lastVerified="2026-07-14" audience="Researchers" products={['Run:ai']} />
 
 | State | Meaning | Your next action |
 | --- | --- | --- |
 | Pending | Waiting for a schedulable resource or prerequisite | Check quota, resource preset, image, and data source. |
 | Initializing | Platform is preparing the workload | Wait for the transition or inspect the event details. |
-| Running | Container command is active | Inspect logs and checkpoint important work. |
+| Running | Container command is active | Inspect and save relevant logs, then checkpoint important work. |
 | Completed | Command ended successfully | Preserve results and delete disposable resources. |
-| Failed | Startup or application command ended with an error | Read the first relevant error in logs before retrying. |
-| Stopped | User or policy stopped the workload | Decide whether to resume with a checkpoint or remove it. |
+| Failed | Startup or application command ended with an error | Open and save the logs immediately, then identify the first relevant error. |
+| Stopped | User or policy stopped the workload | Capture any remaining logs, then decide whether to resume or remove it. |
 | Deleted | Workload record has been removed | Confirm results were stored outside ephemeral storage. |
+
+:::caution
+Workload logs are short-lived. They can disappear shortly after a workload
+stops or fails. Inspect and save the relevant output immediately, and capture
+logs before stopping a running workload whenever possible. Do not rely on
+Run:ai as long-term log storage.
+:::
+
+## Quarterly maintenance
+
+Spike has one planned maintenance period each quarter. A maintenance window
+usually lasts one to two weeks, and SCC plans the dates well in advance together
+with active users. The complete system is unavailable during this period, so
+workloads cannot run.
+
+Plan project deadlines, long-running jobs, checkpoints, and data transfers around
+the announced window. Your SCC AI engineer will discuss upcoming maintenance
+during planning and help identify a safe stopping point for work already in
+progress.
 
 ## Safe recovery
 
