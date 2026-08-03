@@ -9,10 +9,6 @@ sourceRefs: [runai_tools, SSH-container, container]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
-
-<DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai', 'Harbor', 'Podman', 'SSH']} />
-
 Start with the smallest safe check, then make one change at a time. Do not
 include credentials, private keys, full access tokens, or sensitive data paths
 in diagnostics or support requests.
@@ -22,6 +18,26 @@ in diagnostics or support requests.
 Confirm the TU/e account, selected project, role, EduVPN state, and current
 interactive login. If the project is absent, ask the project owner to verify
 membership rather than repeatedly retrying.
+
+## Run:ai CLI reports an `x509` certificate error
+
+An error such as `x509: certificate signed by unknown authority` means the
+Linux trust store used by the CLI cannot validate the certificate chain. It is
+not normally fixed by changing your Run:ai password.
+
+1. Check that the computer's date, time, and time zone are correct.
+2. Connect eduVPN when it is required for your location and retry once.
+3. Run `runai version` and record the CLI version and Linux distribution.
+4. If the CLI came from an older download, reinstall it through the current
+   Run:ai **Help → Researcher Command Line Interface** flow described in
+   [Install and verify the command-line tools](/access/cli/#install-the-runai-cli).
+5. If the error remains, stop and send the SCC AI Engineer the exact error,
+   operating system, CLI version, time, and hostname being contacted.
+
+Do not use an insecure TLS flag, disable certificate verification, or download
+and install the website's leaf certificate as a new root certificate. On a
+managed or security-hardened Linux system, the correct institutional CA update
+must come from SCC or your local IT administrator.
 
 ## Podman login, image push, or image pull failure
 

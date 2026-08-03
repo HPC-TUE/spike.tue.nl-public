@@ -92,6 +92,31 @@ Systems](https://docs.nvidia.com/nsight-systems/UserGuide/index.html) only when
 timeline-level CPU, CUDA, or I/O profiling is required. Profiling adds overhead,
 so keep profiled runs separate from performance runs.
 
+## Diagnose input bottlenecks and GPUDirect Storage
+
+Do not assume that storage is the bottleneck because GPU utilisation is low.
+First compare GPU utilisation, data-wait time, CPU usage, storage throughput,
+and step time with both cold and warm caches. CPU-side decoding, augmentation,
+small-file access, and an undersized shared-memory allocation can all leave a
+GPU waiting.
+
+[NVIDIA GPUDirect
+Storage](https://docs.nvidia.com/gpudirect-storage/index.html) can reduce copies
+through CPU memory on a supported storage, driver, container, and application
+path. Ordinary Python file reads do not start using GDS automatically. Tools
+such as the [NVIDIA DALI NumPy
+reader](https://docs.nvidia.com/deeplearning/dali/main-user-guide/docs/examples/general/data_loading/numpy_reader/dynamic_mode.html)
+can use it in a compatible pipeline, but CPU transformations may remove much
+of the benefit.
+
+Ask your SCC AI Engineer to confirm the approved image, mount, and input
+pipeline before testing GDS. Researchers must not install host drivers or
+change the platform configuration. Benchmark the same dataset, batch,
+precision, and model with and without the approved path, and report cold-cache
+and warm-cache results separately. NVIDIA's [GDS getting-started
+guide](https://docs.nvidia.com/gpudirect-storage/getting-started/) describes the
+platform prerequisites.
+
 ## Measure distributed scaling
 
 Compare the same work at one GPU and at the approved larger topology:

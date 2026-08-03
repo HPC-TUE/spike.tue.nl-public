@@ -61,6 +61,34 @@ For PyTorch, choose the training strategy deliberately:
   supports parallel, sharded checkpoints that can be restored with a different
   topology.
 
+### When the model itself must be partitioned
+
+DDP assumes that a complete model replica fits on every GPU. FSDP reduces that
+memory requirement by sharding model state, but very large models may need a
+different topology:
+
+- **Tensor parallelism** splits large layer operations across GPUs and is
+  normally most effective within a node with fast GPU-to-GPU links.
+- **Pipeline parallelism** assigns groups of layers to stages and passes
+  activations between them. It can span nodes, but introduces pipeline bubbles,
+  micro-batch tuning, and more complicated recovery.
+- **Hybrid parallelism** combines data, tensor, pipeline, or expert parallelism
+  and requires an explicit rank topology and compatible checkpoint format.
+
+[DeepSpeed](https://deepspeed.readthedocs.io/en/latest/) provides tensor,
+pipeline, ZeRO, and autotuning features, but these modes are not interchangeable
+and not every combination is supported. Read its current [tensor-parallel
+training API](https://deepspeed.readthedocs.io/en/stable/training.html),
+[pipeline-parallel guide](https://deepspeed.readthedocs.io/en/stable/pipeline.html),
+and [autotuning guide](https://deepspeed.readthedocs.io/en/stable/autotuning.html)
+before proposing a topology.
+
+Do not start a DeepSpeed autotuning sweep or copy a model-parallel configuration
+from another cluster. First share the model size, precision, sequence length,
+checkpoint format, and expected topology with your SCC AI Engineer. They will
+confirm whether the framework and requested communication pattern are supported
+on Spike and approve a bounded test plan.
+
 ## Single-node multi-GPU in Run:ai
 
 Use a **Standard** training workload and select the approved compute resource
@@ -125,6 +153,21 @@ explains how the PyTorch operator supplies `RANK`, `LOCAL_RANK`, and
 `WORLD_SIZE`. The [distributed workload
 guide](https://run-ai-docs.nvidia.com/saas/workloads-in-nvidia-run-ai/using-training/distributed-training-models)
 documents the worker, master, resource, and elasticity fields.
+
+### InfiniBand is an engineer-managed prerequisite
+
+A multi-node workload needs the approved high-speed network attachment in every
+participating pod. SCC AI Engineers configure and verify that attachment through
+the platform's compute resources and policies. Researchers must not add
+Kubernetes annotations, extended-resource names, or InfiniBand device requests
+copied from OneNote, another project, or another cluster.
+
+Before the real run, the AI Engineer will confirm the selected preset supplies
+the intended network path and validate a small node pair with the current
+platform test. If the application still hangs or falls back to an unexpected
+transport, preserve the per-rank logs and use NVIDIA's [NCCL networking
+troubleshooting guide](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/troubleshooting/networking_troubleshooting.html)
+with the engineer. Do not force interface names or transport settings yourself.
 
 ## Validate before the real run
 

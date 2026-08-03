@@ -1,19 +1,16 @@
 ---
 title: File transfer
-description: Move data through the internet, S3-compatible storage, or a PVC-mounted SSH workspace.
+description: Move data through the internet, S3-compatible storage, rsync, or a PVC-mounted SSH workspace.
 audience: Researchers
 maturity: Experimental
 lastVerified: 2026-07-21
-products: [Run:ai, SSH, S3, s3cmd, Cyberduck, Podman]
+products: [Run:ai, SSH, S3, s3cmd, Cyberduck, Podman, rsync]
 requiresVpn: true
 sourceRefs: [runai_guide, SSH-container, ssh-container-gitlab, spike-1-automation]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
-
-<DocMeta maturity="Experimental" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai', 'SSH', 'S3', 's3cmd', 'Cyberduck', 'Podman']} requiresVpn={true} />
 
 Choose the transfer path based on where the data starts and how long it must
 live. You do not need to copy data through your laptop when the workload can
@@ -24,6 +21,7 @@ download it directly.
 | Public internet | Download from inside the running workload | The path you choose, normally a PVC such as `/data` |
 | S3-compatible object storage | Use an S3 client from inside the workload | The bucket, or a PVC after an explicit sync |
 | Your laptop or workstation | Use the SSH-container and `scp` | The mounted PVC, not the image filesystem |
+| Snellius or another SSH-accessible system | Pull with `rsync` from an SSH-enabled Spike workspace | The mounted PVC |
 | Temporary intermediate files | Use the container filesystem or an ephemeral volume | Disposable; keep no unique copy there |
 
 ## Download directly from the internet
@@ -155,6 +153,51 @@ project PVC at `/data`. Do not request a GPU solely for data transfer.
 Keep the forwarding terminal open during SSH or SCP. Use `scp` for deliberate
 transfers; for large datasets prefer a direct internet download or S3 sync
 from inside the workload.
+
+## Transfer from Snellius with `rsync`
+
+Use `rsync` when the source is Snellius or another system that accepts your SSH
+login and the transfer route has been agreed during onboarding. Run the command
+inside an SSH-enabled Spike workspace with the destination PVC mounted at
+`/data`; the data then moves directly between the two systems instead of
+passing through your laptop.
+
+First open a shell in the transfer workspace:
+
+```bash
+runai workspace bash WORKSPACE_NAME --project PROJECT_NAME
+```
+
+Create the destination and pull the source directory. The trailing slash after
+`REMOTE_DIRECTORY/` means “copy the contents of this directory”:
+
+```bash
+mkdir -p /data/datasets
+rsync -a \
+  --info=progress2 \
+  --partial \
+  --partial-dir=.rsync-partial \
+  USERNAME@snellius.surf.nl:REMOTE_DIRECTORY/ \
+  /data/datasets/
+```
+
+If the connection is interrupted, run the same command again. `rsync` will
+reuse the partial data where possible. Do not add `--delete`, `--inplace`, or
+`--append` to a transfer command copied from elsewhere; those options change
+failure and deletion behaviour. See the official [`rsync`
+manual](https://download.samba.org/pub/rsync/rsync.1) and SURF's
+[file-transfer guidance](https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/92668162/Transfer%2Bfiles%2Bbetween%2Bsystems%2Bor%2Bdirectories).
+
+Before moving a full dataset, test with a small directory and confirm:
+
+- The intended PVC is mounted at `/data`;
+- The remote path and trailing-slash behaviour are correct;
+- The destination has enough free space; and
+- File counts and a sample of checksums match after transfer.
+
+Never place a Snellius password or private key in the image. Use your normal SSH
+authentication and ask your SCC AI Engineer if the direct route, remote host
+key, or data-classification requirements are unclear.
 
 ## Where the files go
 

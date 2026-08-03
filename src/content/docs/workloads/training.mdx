@@ -9,7 +9,6 @@ sourceRefs: [runai_guide, torch-example, multi-gpu]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
 import ScreenshotFigure from '../../../components/ScreenshotFigure.astro';
 import projectSelection from '../../../assets/screenshots/workload-submission/training-create-01-select-project-sanitized.png';
@@ -36,8 +35,6 @@ import distributedArchitecture from '../../../assets/screenshots/workload-submis
 import distributedArchitectureWebp from '../../../assets/screenshots/workload-submission/training-create-10-distributed-architecture-sanitized.webp';
 import distributedEnvironment from '../../../assets/screenshots/workload-submission/training-create-11-distributed-environment-sanitized.png';
 import distributedEnvironmentWebp from '../../../assets/screenshots/workload-submission/training-create-11-distributed-environment-sanitized.webp';
-
-<DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai', 'Harbor']} />
 
 Use a **training** workload for non-interactive work that should have a clear
 command, logs, and completion state. Use an interactive workspace only when you
@@ -137,6 +134,37 @@ endpoint.
   alt="Run:ai distributed training environment with synthetic cluster, project, image, GPU, and worker values"
   caption="Confirm the distributed image, project, worker count, and GPU request before starting a multi-worker run."
 />
+
+## Shared memory for data loaders
+
+Linux containers normally have a small `/dev/shm` shared-memory filesystem.
+Multiprocessing data loaders, browser processes, and distributed communication
+libraries can exhaust it even when normal CPU and GPU memory are still
+available. Typical symptoms include a data-loader worker exiting unexpectedly,
+`Bus error`, or `No space left on device` for `/dev/shm`.
+
+Check the current allocation inside a small running workload:
+
+```bash
+df -h /dev/shm
+```
+
+If the workload needs more shared memory, discuss the required size and reason
+with your SCC AI Engineer. They can approve a compute resource with **Increase
+shared memory size** enabled. NVIDIA documents this setting in the Run:ai
+[compute-resource guide](https://run-ai-docs.nvidia.com/saas/workloads-in-nvidia-run-ai/assets/compute-resources).
+Do not change the compute-resource preset yourself.
+
+Some workloads instead need an engineer-approved ephemeral volume mounted at
+`/dev/shm`. In that case, use only the storage class, size, and persistence
+choice provided by the engineer. The volume is disposable and may use storage
+rather than RAM; it is not a location for checkpoints or the only copy of
+results.
+
+After the change, rerun the smallest test, check `df -h /dev/shm`, and confirm
+that data-loader workers start and stop cleanly. Increasing shared memory does
+not fix an application that leaks workers or creates more processes than the
+approved CPU allocation can sustain.
 
 ## GPU quota, priority, and retries
 

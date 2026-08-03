@@ -28,6 +28,27 @@ logs before stopping a running workload whenever possible. Do not rely on
 Run:ai as long-term log storage.
 :::
 
+## Save application logs to persistent storage
+
+For a workload whose output matters, write the application stream to a file on
+the project PVC while still showing it in the Run:ai log view:
+
+```bash
+set -o pipefail
+mkdir -p /data/logs
+python -u train.py 2>&1 | tee -a /data/logs/train.log
+```
+
+`set -o pipefail` preserves a failing application's exit status instead of
+reporting only the result from `tee`. The `-u` option asks Python to flush output
+without long buffering delays.
+
+This protects the log only when `/data` is the intended persistent mount.
+Confirm it with `findmnt /data` or `df -h /data` before the real run. Do not
+write credentials, access tokens, sensitive prompts, or confidential dataset
+values to the log. For distributed workloads, write a separate file per rank
+or let only rank 0 write the combined application log.
+
 ## Quarterly maintenance
 
 Spike has one planned maintenance period each quarter. A maintenance window

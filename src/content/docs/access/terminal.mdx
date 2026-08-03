@@ -84,6 +84,33 @@ Once that SSH-enabled workspace is **Running**:
 Keep the forwarding terminal open while using SSH. Reconnect by checking that
 the workspace is still **Running**, then start the port forward again.
 
+### Use VS Code Remote - SSH
+
+Once the command-line SSH test succeeds, the same forwarded connection can be
+used by [Visual Studio Code Remote -
+SSH](https://code.visualstudio.com/docs/remote/ssh). Install the **Remote -
+SSH** extension locally and add a host entry to `~/.ssh/config`:
+
+```ssh-config
+Host spike-workspace
+  HostName localhost
+  User developer
+  Port 2222
+  IdentityFile ~/.ssh/id_ed25519
+  IdentitiesOnly yes
+```
+
+Keep the Run:ai port-forward running, open the VS Code Command Palette, choose
+**Remote-SSH: Connect to Host…**, and select `spike-workspace`. Open the project
+directory on the PVC rather than keeping the only copy of code in the
+container's temporary filesystem.
+
+VS Code installs a small server component in the remote environment and may
+need outbound HTTPS during first use. A minimal or non-glibc image may not meet
+its prerequisites. If setup fails, use `runai workspace bash` while you and
+your SCC AI Engineer review the image; do not add a password, root login, or an
+unreviewed SSH daemon configuration as a workaround.
+
 For moving files rather than opening a shell, follow the complete [File
 transfer guide](/storage/file-transfer/).
 
