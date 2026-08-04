@@ -202,11 +202,62 @@ pipeline = build_pipeline(pipeline_config)
 ```
 
 An inferencing example involving direct downloading from Youtube is hereby included as well.
-Rather than using SPDL pipelining, he inferencing example relies on a combination of sub-processes.
+Rather than using SPDL pipelining, the inferencing example relies on a combination of sub-processes.
 Sub-processes include async I/O downloading, a file watchdog, and a node allocation local scheduling system implemented with QCG-PilotJob.
 PLACEHOLDER: LINK TO PRESENTATION FILE AT assets/dataloading/presentation_async_qcg_inference.pdf
 
 ## Interconnect transfer latency from CPU to GPU dominates over computational complexity
+
+Let's assume that I have image data which resides at a local ephemeral PVC mount but it has extremely large dimensions.
+This is a situation you typically encounter with medical images such as CT scan, MRI scan, and Histopathology images.
+For the machine learning task, these images cannot be compressed because compression introduces unwanted artifact effects (e.g. a fracture prediction based on an unsharp tissue region).
+Because the B200 GPUs present in the DGX nodes can computationally process matrices very fast, the transfer latency of the image from CPU RAM to GPU vRAM becomes a major bottleneck.
+As a solution to this problem, Nvidia recently introduced the [cuFile API](https://docs.nvidia.com/gpudirect-storage/getting-started/index.html).
+The API, by means of a GPU device pointer and the cuFuleWrite method, transfers data from the local ephemeral PVC mount directly into vRAM memory.
+There is no intermediate transfer step anymore from the local PVC mount to RAM.
+
+PyTorch provides the ***torch.cuda.gds.GdsFile*** class to interface with the cuFile API, however, the implemented transfer mechanics are rather primitive (transference of bytes with a particular offset).
+Therefore, we recommend utilization of higher-level abstractions such as the ***monai.data.dataset.GDSDataset*** class which automatically encodes interaction into the more primitive form of transfer mechanic described earlier.
+The package [MONAI](https://github.com/project-monai/monai) has the ability to recognize PyTorch as a tensor computation backend.
+
+```
+import os
+import torch
+import pandas as pd
+import monai.transforms as mt
+from monai.data import ThreadDataLoader
+from monai.data.dataset import GDSDataset
+
+img_dir_train = "labels_train/"
+labels_fpath_train = "labels_train.csv"
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+cache_dir = "/gds_cache_dir"
+
+transform = mt.Compose(
+    [
+        mt.LoadImageD(keys=("image", "label"), image_only=True, ensure_channel_first=True),
+        mt.EnsureTypeD(keys=("image", "label"), device=device)
+    ]
+)
+
+// Convert labels into separate loadable files
+// Explanation further assumes access to "labels_train/labels/"
+...
+
+input_data = []
+for filename in os.listdir(os.path.join(img_dir_train, "")):
+    input_data.append(
+        {
+            "image": os.path.join(img_dir_train, filename),
+            "label": os.path.join(img_dir_train, "labels", filename),
+        }
+    )
+
+dataset = GDSDataset(data=input_data, transform=transform, cache_dir=cache_dir, device=0)
+dataloader = monai.data.ThreadDataLoader(dataset, batch_size=16)
+
+train_batch = next(train_dataloader)
+```
 
 <NextSteps links={[
   { href: '/access/terminal/', label: 'Use terminal access safely' },
