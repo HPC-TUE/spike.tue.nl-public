@@ -1,0 +1,73 @@
+---
+title: General tensor contractions with Einstein summation convention
+description: Configure a contraction with the summation convention, configure optimal contraction pathing and ordering, and reshape/transpose tensors for optimal GPU kernel launches
+audience: Researchers
+maturity: Verified
+lastVerified: 2026-07-21
+products: [Run:ai]
+sourceRefs: [runai_guide, SSH-container, GPU-direct-storage]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
+
+## Einstein summation convention
+
+The Einstein summation convention provides a concise notation to execute a wide variety of multi-dimensional linear algebra operations. 
+It works by assigning a subscript label to each dimension of the input operands and specifying which subscripts should appear in the result. 
+The output values are then calculated by multiplying the operand elements and summing those products over all dimensions omitted from the final output format.
+Examples include: ij,jk->ik (matrix multiplication), bij,bjk->bik (batched matrix multiplication), i,j->ij (outer product), and ij->ji (transpose).
+This notation is very nice for fast definition of complicated operation expressions, however, fails to be executed efficiently in the standard way of computation.
+The standard way is based on performing [sum-of-product operations](https://dev.to/kylepena/investigating-the-performance-of-npeinsum-22ho) by striding over the einsum operands.
+
+## Contraction pathing and ordering
+
+Pathing and ordering involves an [algorithm executed offline](https://optimized-einsum.readthedocs.io/en/stable/optimal_path.html) (not during training) which iterates over all ways to break-up (path) and reorder contractions.
+When the algorithm terminates, the break-up and reorder procedure with the least amount of computational complexity is selected for execution.
+From time to time, the algorithm also manages to find the appropriate tensor operation with associated cuBLAS kernel to apply for a particular contraction.
+An example on how pathing and ordering can be performed offline separately from instantiating the machine learning pipeline used for training (that is, you do not invocate the pathing and re-ordering algorithm during pipeline initialization) is provided below:
+
+```
+import opt_einsum as oe
+import torch
+
+tensor1 = torch.normal(0, 1, size=(5,))
+tensor2 = torch.normal(0, 1, size=(5, 3, 4))
+tensor3 = torch.normal(0, 1, size=(20, 5, 9, 4))
+tensor4 = torch.normal(0, 1, size=(3, 9, 12, 4))
+tensor5 = torch.normal(0, 1, size=(3, 9, 12))
+
+path_info = oe.contract_path('k, ...klf,...kmf,lmnf,lmn->...nf', tensor1, tensor2, tensor3, tensor4, tensor5)
+print(path_info[1])
+
+-->  Complete contraction:  k,klf,dkmf,lmnf,lmn->dnf
+         Naive scaling:  6
+     Optimized scaling:  5
+      Naive FLOP count:  6.480e+5
+  Optimized FLOP count:  7.480e+4
+   Theoretical speedup:  8.664e+0
+  Largest intermediate:  2.160e+3 elements
+--------------------------------------------------------------------------------
+scaling        BLAS                current                             remaining
+--------------------------------------------------------------------------------
+   3              0             klf,k->klf                dkmf,lmnf,lmn,klf->dnf
+   4              0         lmn,lmnf->lmnf                    dkmf,klf,lmnf->dnf
+   5              0         klf,dkmf->lfdm                        lmnf,lfdm->dnf
+   5              0         lfdm,lmnf->dnf                              dnf->dnf
+```
+
+Interesting to note is the BLAS 0 indication, meaning that no efficient tensor operation with attached cuBLAS kernel was found for execution.
+If we would leave the result of opt_einsum as-is during initialization of the machine learning pipeline, the einsum operation would run with sub-optimal kernel invocations.
+This problem was recognized by the machine learning community as well in a paper called [Einsum Benchmark: Enabling the Development of Next-Generation Tensor Execution Engines](https://doi.org/10.52202/079017-3111).
+
+## Tensor reshaping and transposing
+
+Luckily we can employ dimension reshaping and transposition to correct the result of opt_einsum.
+
+<NextSteps links={[
+  { href: '/access/terminal/', label: 'Use terminal access safely' },
+  { href: '/workloads/training/', label: 'Attach storage to a workload' },
+]} />
