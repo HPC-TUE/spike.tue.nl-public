@@ -66,6 +66,12 @@ This problem was recognized by the machine learning community as well in a paper
 ## Tensor reshaping and transposing
 
 Luckily we can employ dimension reshaping and transposition to correct the result of opt_einsum.
+As an example, we take the contraction klf,dkmf->lfdm.
+When looking at the contraction, we can see that k should be reduced.
+Because f shows up in both operands and output, this dimension can be considered to be a batch dimension.
+Dimensions l, d, and m are multiplied over in comparison to the output.
+Therefore, this contraction can be altered to flk,fkdm->fldm, where transposition is used initially to move the dimensions in the correct order.
+Subsequently, reshaping dm to a single dimension and back again in the output ensures that the contraction can be dispatched to a batched GEMM cuBLAS kernel.
 
 <NextSteps links={[
   { href: '/access/terminal/', label: 'Use terminal access safely' },
