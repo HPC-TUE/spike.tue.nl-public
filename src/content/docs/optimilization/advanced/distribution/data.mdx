@@ -87,6 +87,26 @@ In the example, a dataset/dataloader is responsible for copying MNIST dataset ba
 
 ## Configure data loading for distribution
 
+To make sure that particular GPUs do not receive the same input batches, it is important to limit the batch indices that particular GPUs have access to throughout an epoch.
+The ***torch.utils.data.DataLoader*** class can be given a sampler as constructor parameter.
+The sampler is responsible for controlling the sequence of indices/keys used in data loading. 
+Samplers represent iterable objects over the indices to datasets.
+The ***torch.utils.data.distributed.DistributedSampler*** can be used to limit the indices to be sampled for the source code responsible for graph computation for a particular rank.
+The rank subsequently determines on which GPU the source code is placed and executed:
+
+```
+dataset1 = datasets.MNIST('../data', train=True, download=True,
+                       transform=transform)
+dataset2 = datasets.MNIST('../data', train=False,
+                       transform=transform)
+
+sampler1 = DistributedSampler(dataset1)
+sampler2 = DistributedSampler(dataset2)
+
+train_loader = torch.utils.data.DataLoader(dataset1, sampler=sampler1, **train_kwargs)
+test_loader = torch.utils.data.DataLoader(dataset2, sampler=sampler2, **test_kwargs)
+```
+
 ## Data parallel
 
 ## Model parallel
@@ -98,6 +118,8 @@ In the example, a dataset/dataloader is responsible for copying MNIST dataset ba
 ## Multi-GPU run:ai launching
 
 ## Elastic run:ai launching
+
+## Effect of NVLink and NCCL on communication efficiency
 
 <NextSteps links={[
   { href: '/access/terminal/', label: 'Use terminal access safely' },
