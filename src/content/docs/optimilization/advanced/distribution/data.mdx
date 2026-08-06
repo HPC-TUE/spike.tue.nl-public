@@ -1,0 +1,105 @@
+---
+title: Distribution and aggregation of graph operations over multiple (fractions of) GPUs for advanced users
+description: Configure computation graph operations on different (fractions of) GPUs, and understand differences between operation distribution types and their effect on computational complexity, network, and interconnect latency
+audience: Researchers
+maturity: Verified
+lastVerified: 2026-07-21
+products: [Run:ai]
+sourceRefs: [runai_guide, SSH-container, GPU-direct-storage]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
+
+## Graph operation distribution
+
+Operation distribution is not a new machine learning concept.
+Back in the 1980's, performance as a result of hardware development (CPUs and complex instruction set machines) at a particular point in time was coming to a halt.
+In response, Inmos designed the transputing architecture, including the associated transputer hardware modules.
+In the transputer architecture, one transputer acts as the central authority for booting a system containing a number of connected transputers. 
+The transputers in principle communicate over separate serial links, one transputer message being communicated to another transputer at a time.
+The loader would boot the central transputer, which would then begin sending boot code to the other transputers in the network, and could customize the code sent to each one.
+
+Both communication and computation can be abstracted in software by means of a message passing interface.
+As an example, we discuss the interface called openmpi:
+
+```
+#include <stdio.h>
+#include "mpi.h"
+
+int main(argc, argv)
+int argc;
+char **argv;
+{
+	int rank, value;
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);    //sets rank of the current processor, root = 0, to rank variable
+    printf("hello I am process %d\n", rank); //output rank or process ID of the this process
+	
+	if (rank == 0) {
+        printf("Enter a value to send to processor %d:\n", destination);
+        scanf("%d", &buffer);
+        MPI_Isend(&buffer, count, MPI_INT, destination, tag, MPI_COMM_WORLD, &request); //non blocking send to destination process
+    }
+
+    if (rank == destination) {
+        MPI_Irecv(&buffer, count, MPI_INT, 0, tag, MPI_COMM_WORLD, &request); //destination process receives
+    }
+
+    MPI_Wait(&request, &status); //bloks and waits for destination process to receive data
+
+    if (rank == 0) {
+        printf("processor %d sent %d\n", rank, buffer);
+    }
+    if (rank == destination) {
+        printf("processor %d got %d\n", rank, buffer);
+		// Perform some computations
+		...
+    }
+
+    MPI_Finalize();
+
+	return 0;
+}
+```
+
+In principle, all 'transputers' receive the same source code when the openmpi software interface would be used.
+The rank and the world size determine which transputer is going to wait for information, compute, etc.
+When a particular transputer reaches the state of finalization, it is assumed to be finished and switches off.
+The same communication and computation principles in the situation of computation distribution are used in machine learning frameworks today.
+
+Why do specific machine learning computation graphs implemented with these frameworks require access to operation distribution?
+Attention-based neural network architectures do not contain a severely restrictive inductive bias.
+This means that as long as the amount of data used for training and the number of model parameters can be scaled up, this neural network architecture generalizes better to the task it needs to perform.
+The time required to process the entire dataset on a single GPU in a single epoch might be too long, or the amount of model parameters causes the computation graph not to fit anymore in GPU vRAM.
+In this situation, the same model parameters have to be processed in parallel on different GPUs for different batches, or computation graph sections have to be placed on different GPUs and intermediate batch representations have to be synchronized between the GPUs accordingly.
+Data, in contrast to the model parameters, might not be allowed to leave the administrative domain of a particular system.
+Therefore, a communication mechanism has to be set up in which model parameters are synchronized to other systems so that a model can still be trained.
+This form of model parameter training is typically referred to as federated learning.
+In federated learning, local data processing and sharing model parameters is required due to privacy concerns.
+
+For the explanations that follow, we assume you are familiar with the simple model training example in PLACEHOLDER: OPTIMILIZATION/BEGINNER/SYNCHRONIZATION.
+In the example, a dataset/dataloader is responsible for copying MNIST dataset batches to RAM, the Module object and batches are synchronized onto a device by means of the ***Module.to(device)*** and ***Tensor.to(device)*** methods, and module parameters are trained.
+
+## Configure data loading for distribution
+
+## Data parallel
+
+## Model parallel
+
+## Tensor parallel
+
+## Full sharding
+
+## Multi-GPU run:ai launching
+
+## Elastic run:ai launching
+
+<NextSteps links={[
+  { href: '/access/terminal/', label: 'Use terminal access safely' },
+  { href: '/workloads/training/', label: 'Attach storage to a workload' },
+]} />
