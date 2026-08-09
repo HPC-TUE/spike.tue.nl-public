@@ -91,52 +91,96 @@ This means that when the seed changes, the order by which shards and random acce
 ```
 from spdl.pipeline import PipelineBuilder, PipelineConfig, SinkConfig, Merge, build_pipeline
 from spdl.source import DistributedRandomSampler
+from collections import defaultdict
 from async_unzip import unzip
 from typing import Sequence
 import aiofiles
 import aiohttp
+import aiopath
 import asyncio
 import spdl
 
 
 # Constants
+SHARD_PATH="/tmp/shard_cache"
 SHARDS = 1000
+RANK_MAX_SHARDS = 20
 SHARD_SIZE = 50000
 NETWORK_THREADS = 16
+
+# Asyncio specific globally accessible structures
+file_locks: dict[aiopath.AsyncPath, asyncio.Lock] = defaultdict(asyncio.Lock)
+
+
+async def get_oldest_shard_async(cache_dir: str) -> aiopath.AsyncPath | None:
+
+    path = aiopath.AsyncPath(cache_dir)
+	count = sum(1 async for _ in path.glob("*.zip"))
+    shards = []
+
+	if count <= RANK_MAX_SHARDS:
+		return None
+
+    # Async iteration over top-level directory zip files
+    async for item in path.glob("*.zip"):
+        stat_result = await item.stat()
+        shards.append((item, stat_result.st_mtime))
+
+    if not shards:
+        return None
+
+    shards.sort(key=lambda x: x[1])
+    return shards[0][0]
 
 
 # Note: spdl prepends async keyword already, do not include here
 def download_shard(index: int):
-	
+
+	url = f"https://host/images-{index}.zip"
+	path = f"{SHARD_PATH}/images-{index}.zip"
+
+	path_obj = aiopath.AsyncPath(path)
+	if await path_obj.exists():
+		return path
+
+	old_shard = await get_oldest_shard_async(SHARD_PATH)
+	if old_shard:
+		async with file_locks[old_shard]:
+			unzipped = str(old_shard).split('.')[0] + '/'
+			await old_shard.unlink()
+			await aiopath.AsyncPath(unzipped).rmdir()
+
 	async with aiohttp.ClientSession() as session:
-	
-		url = f"https://host/images-{index}.zip"
+		
 		async with session.get(url) as response:
 		
 			if resp.status == 200:
-			
-				path = f"/eph-store/images-{index}.zip"
-				f = await aiofiles.open(path, mode='wb')
-				await f.write(await response.read())
-				await f.close()
+				
+				async with file_locks[path_obj]:
+					f = await aiofiles.open(path, mode='wb')
+					await f.write(await response.read())
+					await f.close()
+				
 				return path
 
 			else:
-				return ""
+				return None
 
 
 # Note: spdl prepends async keyword already, do not include here
 def unzip_shard(a_path: str):
 
-	if a_path:
+	outp_path = a_path.split('.')[0] + '/'
+	a_path_obj = aiopath.AsyncPath(a_path)
+	outp_path_obj = aiopath.AsyncPath(outp_path)
 	
-		outp_path = a_path.split('.')[0] + '/'
-		unzip(a_path, path=outp_path, max_workers=1)
+	if await outp_path_obj.exists():
 		return outp_path
-	
-	else:
 
-		return ""
+	async with file_locks[a_path_obj]:
+		unzip(a_path, path=outp_path, max_workers=1)
+
+	return outp_path
 
 
 async def sample_shard(
@@ -154,7 +198,7 @@ async def sample_shard(
 		idx = await queues[1].get()
 	
 		// Note: connect img_dir and idx to functionality of earlier shared dataset/dataloader objects
-		// If the returned output_path is empty, you continue the loop, thereby not calling queue.put
+		// Note: when trying to read image from img_dir, make sure to acquire lock and to escape dir not found exception
 		...
 		
 		output_queue.put(image, label)
