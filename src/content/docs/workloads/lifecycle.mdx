@@ -3,7 +3,7 @@ title: Workload lifecycle, logs, and cleanup
 description: Interpret workload states, inspect logs, retry safely, and clean up.
 audience: Researchers
 maturity: Verified
-lastVerified: 2026-07-29
+lastVerified: 2026-08-06
 products: [Run:ai]
 sourceRefs: [runai_guide, spike-1-cleanup]
 sensitivity: public
@@ -49,12 +49,12 @@ write credentials, access tokens, sensitive prompts, or confidential dataset
 values to the log. For distributed workloads, write a separate file per rank
 or let only rank 0 write the combined application log.
 
-## Quarterly maintenance
+## Planned maintenance
 
-Spike has one planned maintenance period each quarter. A maintenance window
-usually lasts one to two weeks, and SCC plans the dates well in advance together
-with active users. The complete system is unavailable during this period, so
-workloads cannot run.
+Spike normally has two planned maintenance periods each year: a broader summer
+window and a year-end window for required updates. SCC communicates the exact
+dates, scope, and expected downtime to active users in advance. Depending on the
+work involved, some or all Spike services may be unavailable.
 
 Plan project deadlines, long-running jobs, checkpoints, and data transfers around
 the announced window. Your SCC AI engineer will discuss upcoming maintenance

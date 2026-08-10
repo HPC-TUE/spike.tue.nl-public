@@ -3,7 +3,7 @@ title: Storage and data
 description: Select project storage and understand lifecycle consequences before transferring data.
 audience: Researchers
 maturity: Verified
-lastVerified: 2026-07-21
+lastVerified: 2026-08-06
 products: [Run:ai, S3]
 sourceRefs: [runai_guide, SSH-container, GPU-direct-storage, spike-1-automation]
 sensitivity: public
@@ -20,6 +20,30 @@ whether your data survives a restart, retry, or deletion.
 | Persistent volume | Checkpoints, repeatable outputs, and long-lived work | Survives workload restarts according to project policy. |
 | Ephemeral volume | Caches, temporary preprocessing, and disposable scratch data | Removed with the associated workload; never store the only copy of a result. |
 | S3-compatible object storage | Large datasets, shared objects, and transfers between tools | Independent of a workload; access requires a project bucket and credentials. |
+
+## TU/e-managed file storage and NetApp
+
+A TU/e-managed network share, including a NetApp-backed share, is an existing
+data source rather than Spike project storage. Do not assume that a share can be
+mounted directly into a workload. Before onboarding or a large transfer, give
+SCC the share owner, protocol, approximate size, data classification, source
+path, and required access period. SCC will confirm whether the approved route
+is a direct managed connection or a staged transfer through S3 or an
+SSH-accessible workspace.
+
+Test the chosen route with a small directory before moving the dataset. Confirm
+permissions, destination capacity, file counts, and sample checksums. Never copy
+a NetApp password, storage token, or private key into a container image,
+notebook, workload command, or support ticket.
+
+## External cloud storage
+
+External cloud storage is not automatically trusted or mounted on Spike. Record
+the provider, region, bucket or share owner, expected transfer volume,
+classification, and any egress implications during intake. Use a project-scoped
+credential through the approved secret mechanism and copy only into approved
+persistent storage. The [file-transfer guide](/storage/file-transfer/) contains
+the supported S3, SSH, and rsync patterns.
 
 ## Container filesystem versus PVC
 

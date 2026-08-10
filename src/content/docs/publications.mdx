@@ -1,0 +1,100 @@
+---
+title: Publications and communications
+description: Acknowledge Spike, describe its use in a paper, and prepare accurate public communications.
+audience: Researchers, project leads, and communications staff
+maturity: Verified
+lastVerified: 2026-08-06
+products: [Spike]
+requiresVpn: false
+sourceRefs: [spike-public-fit, usage-agreement]
+sensitivity: public
+---
+
+import NextSteps from '../../components/NextSteps.astro';
+
+Credit the infrastructure when Spike materially supported a result. Keep the
+acknowledgement concise, then put the reproducibility details in the methods or
+computational-resources section.
+
+## Recommended acknowledgement
+
+Use this wording unless the project, funder, journal, or SCC service owner has
+approved a required alternative:
+
+> Computational resources for this work were provided by the Spike-1 GPU
+> cluster, operated by the Supercomputing Center at Eindhoven University of
+> Technology.
+
+If an SCC engineer made a substantial intellectual or technical contribution,
+discuss normal authorship or contributor-credit rules with them rather than
+expanding the infrastructure acknowledgement automatically.
+
+## Describe Spike use in a paper
+
+Record enough detail for another researcher to understand the computational
+conditions:
+
+- Spike-1 as the execution platform and Run:ai as the workload orchestrator;
+- GPU model and count, worker count, and the approved compute-resource preset;
+- immutable Harbor image tag or digest;
+- framework, CUDA, driver, and important library versions;
+- model, dataset, and code revisions;
+- precision, distributed strategy, random seeds, and checkpoint policy; and
+- the measurement period and any material limitations.
+
+A methods sentence can follow this pattern:
+
+> Experiments were executed on the Spike-1 GPU cluster at Eindhoven University
+> of Technology using [GPU count and model] managed through Run:ai. Workloads
+> used container image [immutable tag or digest] with [framework and version];
+> the complete configuration and code revision are reported in [repository or
+> supplement].
+
+## Citation versus acknowledgement
+
+This documentation does not define a DOI or bibliographic record for Spike.
+Do not invent one. Acknowledge the platform, describe the computational setup,
+and separately cite the software, models, datasets, and methods used by the
+research. Ask SCC before submission if a funder or facility-specific statement
+is required.
+
+## Prepare a SPIKE press release
+
+Contact the SCC service owner and TU/e Communications before announcing a
+result that names Spike, SCC, TU/e, MDCS, NVIDIA, or another partner. Agree on
+the publication date, spokesperson, partner attribution, image rights, and
+which performance or capacity claims have been verified.
+
+Build the draft from five checked facts:
+
+1. **Research purpose:** the problem and why GPU computing mattered.
+2. **Result:** what was demonstrated, without overstating causality or impact.
+3. **Spike contribution:** the workload type and the practical capability the
+   platform provided.
+4. **People and partners:** approved names, roles, funding, and quotations.
+5. **Reproducibility and responsibility:** where readers can find the paper,
+   code, data statement, or contact, subject to project policy.
+
+Avoid claims such as “unlimited,” “dedicated,” “instant,” or “record-breaking”
+unless the evidence and comparison have been reviewed. Spike is a shared
+research platform; temporary priority or a successful benchmark is not a
+permanent platform guarantee.
+
+### Draft structure
+
+- **Headline:** outcome first; mention Spike only when it adds meaning.
+- **Opening:** one paragraph covering who, what, and why it matters.
+- **Research detail:** the method and evidence in plain language.
+- **Infrastructure detail:** one paragraph explaining Spike's contribution.
+- **Approved quote:** named speaker, role, and organization.
+- **Close:** paper or project link, funding, acknowledgement, and media contact.
+
+Do not publish project names, user identities, unpublished results, sensitive
+data, screenshots, cluster identifiers, or utilisation figures without the
+owner's explicit approval.
+
+<NextSteps links={[
+  { href: '/start-here/essential-practices/', label: 'Record a reproducible workload' },
+  { href: '/advanced/benchmarks/', label: 'Report performance responsibly' },
+  { href: '/support/', label: 'Ask SCC to confirm wording' },
+]} />

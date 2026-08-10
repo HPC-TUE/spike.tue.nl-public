@@ -3,7 +3,7 @@ title: Run a training workload
 description: Submit, inspect, and clean up a first GPU training workload.
 audience: Researchers
 maturity: Verified
-lastVerified: 2026-07-21
+lastVerified: 2026-08-06
 products: [Run:ai, Harbor]
 sourceRefs: [runai_guide, torch-example, multi-gpu]
 sensitivity: public
@@ -175,11 +175,12 @@ selected resources; test the single-GPU path first.
 
 ### The default scheduling state
 
-All projects use the same scheduling weight. By default, all projects run in
-the over-quota state, so an ordinary GPU request does not receive a higher place
-in the queue simply because it belongs to a particular project. Over quota
-means that the project may use available capacity under the default policy; it
-is not a promise that GPUs are immediately available.
+Projects normally submit work in the over-quota state. Over-quota work may use
+otherwise idle GPUs, but it has no guaranteed start time and may be preempted.
+When several projects compete for over-quota capacity, scheduler fairness is
+proportional to each project's configured GPU quota; it is not equal weighting.
+An ordinary request therefore receives neither reserved capacity nor a
+project-specific priority advantage.
 
 ### Requesting a scale-up
 

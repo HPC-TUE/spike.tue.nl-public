@@ -1,0 +1,93 @@
+---
+title: Essential practices
+description: Protect data, make work reproducible, and use shared GPU capacity responsibly.
+audience: All Spike users
+maturity: Verified
+lastVerified: 2026-08-06
+products: [Run:ai, Harbor, Podman]
+requiresVpn: false
+sourceRefs: [runai_guide, account-setup-guide-harbor-spike, container, runai_tools]
+sensitivity: public
+---
+
+import NextSteps from '../../../components/NextSteps.astro';
+
+These practices apply to every Spike workload, from a first one-GPU test to a
+distributed experiment or managed inference endpoint. Review them before moving
+the only copy of data or requesting additional GPUs.
+
+## Before submitting
+
+1. Use an immutable Harbor image tag and a command you have tested on the
+   smallest suitable compute-resource preset.
+2. Confirm that inputs, outputs, logs, and checkpoints use the intended
+   persistent data source or PVC.
+3. Record the code revision, configuration, dataset version, image tag, random
+   seed, and expected result.
+4. Check that the project permits the data, external services, models, and
+   software licences involved.
+5. Know how the application will stop, checkpoint, resume, and clean up.
+
+:::caution
+The writable container filesystem is temporary. A retry, image change, or
+workload deletion can replace it. Never keep the only copy of code, data, a
+checkpoint, or a result there.
+:::
+
+## Make the run recoverable
+
+Write checkpoints to persistent storage at useful intervals and test one
+restart before a costly run. A useful checkpoint includes the model, optimizer,
+scheduler, step or epoch, and any random or sampler state needed to continue
+without repeating or skipping data.
+
+Save application logs to the project PVC as well as the Run:ai log view.
+Run:ai logs are operational diagnostics, not long-term storage, and can
+disappear after a workload stops or fails.
+
+## Observe before scaling
+
+Start with one GPU and establish a baseline. Record GPU utilisation, CPU and
+input-pipeline behaviour, step time, memory use, and checkpoint cost. Profile a
+representative short run before assuming that more GPUs will help. Scaling an
+input bottleneck usually makes the bottleneck more expensive rather than
+faster.
+
+Use [experiment tracking](/advanced/experiment-tracking/) for run identity and
+metrics, and [reproducible benchmarking](/advanced/benchmarks/) for timing and
+profiling.
+
+## Respect shared capacity
+
+Over-quota work uses otherwise idle capacity, has no guaranteed start time, and
+may be preempted. Request the smallest resource that answers the current
+question, remove stale tests, and delete disposable completed workloads. Ask
+for a temporary quota and priority window only after the workload is
+reproducible and the requested period, utilisation, and recovery plan are
+clear.
+
+## Keep secrets and sensitive data out of the workload definition
+
+Do not place passwords, API keys, private keys, access tokens, or storage
+credentials in an image, repository, notebook, command line, support ticket, or
+saved screenshot. Use the approved project secret mechanism. Do not log raw
+prompts, confidential samples, personal data, authorization headers, or full
+credentials.
+
+## Finish deliberately
+
+Before stopping or deleting a workload:
+
+- save the final checkpoint, result, and relevant logs;
+- verify important files on persistent storage;
+- record the image tag, command, inputs, and result location;
+- remove temporary credentials and disposable resources; and
+- tell the project contact when a reserved priority window is no longer needed.
+
+<NextSteps links={[
+  { href: '/storage/data/', label: 'Choose durable storage' },
+  { href: '/images/podman-harbor/', label: 'Build a safe container image' },
+  { href: '/workloads/training/', label: 'Run the first training workload' },
+  { href: '/workloads/lifecycle/', label: 'Manage logs, recovery, and cleanup' },
+  { href: '/support/', label: 'Contact SCC support' },
+]} />

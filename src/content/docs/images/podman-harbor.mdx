@@ -3,7 +3,7 @@ title: Build and publish images with Podman
 description: Create a reproducible Containerfile, build it with Podman, and publish it to Harbor.
 audience: Researchers
 maturity: Verified
-lastVerified: 2026-07-21
+lastVerified: 2026-08-06
 products: [Podman, Harbor]
 sourceRefs: [container, account-setup-guide-harbor-spike]
 sensitivity: public
@@ -15,10 +15,34 @@ Use Podman to create images that are reproducible, project-scoped, and easy to
 trace. Choose a CUDA base image that matches your workload requirements, install
 only the required dependencies, and run the application as a non-root user.
 
+## Choose a trusted base image
+
+For GPU workloads, start with an image maintained by the software vendor. The
+[NVIDIA NGC CUDA catalog](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/cuda)
+publishes the `nvcr.io/nvidia/cuda` images used in the example below, including
+their tags, layers, licenses, and security-scan results. Framework-specific NGC
+images can also be a useful starting point when they match the approved Spike
+software stack.
+
+Use these rules when selecting a base:
+
+- Ask your SCC AI Engineer which CUDA family is compatible with Spike before
+  choosing a tag. A newer tag is not automatically compatible with the cluster.
+- Pin a complete versioned tag; never depend on `latest`. Record the resolved
+  image digest with the project so the build can be reproduced.
+- Prefer a `runtime` image for the final workload. Use a `devel` image only while
+  compiling, ideally as the build stage of a multi-stage Containerfile.
+- Review the image's license, support status, and NGC security scan. Rebuild and
+  rescan your project image when the base or an installed dependency receives a
+  security update.
+- Do not use an unverified personal or community image merely because it already
+  contains the packages you need. An official base still needs project-specific
+  dependency review and secret handling.
+
 ## A minimal Containerfile
 
 ```text
-FROM nvcr.io/nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+FROM nvcr.io/nvidia/cuda:12.8.0-cudnn-runtime-ubuntu22.04
 RUN useradd --create-home --uid 10001 researcher
 WORKDIR /workspace
 COPY requirements.txt .

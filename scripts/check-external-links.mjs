@@ -34,9 +34,13 @@ async function check(url) {
     try {
       const headers = { 'user-agent': 'spike-docs-link-check/1.0', accept: 'text/html,*/*' };
       let response = await fetch(url, { method: 'HEAD', redirect: 'follow', headers, signal: controller.signal });
-      if (response.status === 405 || response.status === 501) {
+      // Some valid services reject HEAD with 400 or 403 instead of 405. Confirm
+      // every non-successful HEAD response with a GET before reporting failure.
+      if (!response.ok) {
+        await response.body?.cancel();
         response = await fetch(url, { method: 'GET', redirect: 'follow', headers, signal: controller.signal });
       }
+      await response.body?.cancel();
       if (!response.ok) return url + ' returned HTTP ' + response.status;
       return null;
     } catch (error) {

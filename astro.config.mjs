@@ -24,7 +24,11 @@ export default defineConfig({
       sidebar: [
         {
           label: 'Getting started',
-          items: [{ slug: 'start-here' }, { slug: 'start-here/intake' }],
+          items: [
+            { slug: 'start-here' },
+            { slug: 'start-here/intake' },
+            { slug: 'start-here/essential-practices' },
+          ],
         },
         {
           label: 'Access & connectivity',
@@ -55,6 +59,7 @@ export default defineConfig({
             { slug: 'advanced/slurm-reference' },
           ],
         },
+        { label: 'About Spike', items: [{ slug: 'publications' }] },
         { label: 'Help', items: [{ slug: 'troubleshooting' }, { slug: 'support' }] },
       ],
     }),

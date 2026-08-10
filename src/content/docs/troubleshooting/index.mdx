@@ -3,7 +3,7 @@ title: Troubleshooting
 description: Diagnose common Spike workflow failures safely and know what to include in an escalation.
 audience: Researchers
 maturity: Verified
-lastVerified: 2026-07-21
+lastVerified: 2026-08-06
 products: [Run:ai, Harbor, Podman, SSH]
 sourceRefs: [runai_tools, SSH-container, container]
 sensitivity: public
@@ -48,9 +48,11 @@ with the tag visible in Harbor and confirm project access.
 ## Workload stays pending or reports insufficient quota
 
 Inspect the selected project, compute-resource preset, priority, and requested
-GPU amount. All projects use the same weighting and, by default, run over
-quota; an ordinary request does not receive a project-specific queue advantage.
-Reduce a test workload to the smallest suitable preset or wait for capacity.
+GPU amount. Projects normally use over-quota capacity, which has no guaranteed
+start time and may be preempted. When several projects compete for that
+capacity, scheduler fairness is proportional to configured project GPU quota;
+it is not equal weighting. Reduce a test workload to the smallest suitable
+preset or wait for capacity.
 
 If the project is ready for a scale-up, request a temporary quota and GPU
 priority window from the administrators. Include the project, GPU type/count,
