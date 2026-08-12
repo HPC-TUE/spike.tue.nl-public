@@ -235,6 +235,10 @@ def worker(rank, world_size, gpu_count, device_type, bsize, test_bsize, lr, gamm
         scheduler.step()
 
     if save_model:
+	
+		# Ensure that all processes have reached this point such that no updates are still being performed
+		dist.barrier()
+
 		if rank == 0:
 			torch.save(ddp_model.module.state_dict(), "mnist_cnn.pt")
 
@@ -490,8 +494,7 @@ def worker(rank, world_size, gpu_count, device_type, bsize, test_bsize, lr, gamm
 			{"model": model_state, "optimizer": optimizer_state},
 			checkpoint_id=f"checkpoint-dist-mnist-cnn",  # each rank will save its own file
 		)
-		
-		dist.barrier()
+
 
 def main():
 
@@ -606,7 +609,7 @@ def worker(rank, world_size, gpu_count, device_type, bsize, test_bsize, lr, gamm
 		parallelize_module(
 			module=transformer_block,
 			device_mesh=tp_group,
-			parallelize_plan=layer_tp_plan,
+			parallelize_plan=layer_tp_plan
 		)
 	
 	model = parallelize_module(
@@ -614,10 +617,10 @@ def worker(rank, world_size, gpu_count, device_type, bsize, test_bsize, lr, gamm
 		tp_group,
 		{
 			"tok_embeddings": RowwiseParallel(
-				input_layouts=Replicate(),
+				input_layouts=Replicate()
 			),
 			"output": ColwiseParallel(
-				output_layouts=Replicate(),
+				output_layouts=Replicate()
 			),
 		}
 	)
@@ -627,7 +630,7 @@ def worker(rank, world_size, gpu_count, device_type, bsize, test_bsize, lr, gamm
 	
     optimizer = optim.Adadelta(ddp_model.parameters(), lr=lr)
     scheduler = StepLR(optimizer, step_size=1, gamma=gamma)
-	
+
     for epoch in range(1, epochs + 1):
         train(..., ddp_model, device, train_loader, optimizer, epoch)
         test(ddp_model, device, test_loader)
