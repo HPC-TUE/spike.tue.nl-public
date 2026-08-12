@@ -292,13 +292,14 @@ if __name__ == '__main__':
 
 ## Model pipeline parallel
 
-There are situations where the amount of involved model parameters is very large. 
-This is typically the case with foundational attention-based representation models. 
+There are situations where the amount of involved model parameters is very large.
+This is typically the case with foundational attention-based representation models.
 The required batch size in combination with the parameter count may cause vRAM occupation to reach outside the capacity of a single GPU.
 In the situations sketched above, distributed pipelining can be employed.
 The idea behind distributed pipelining is that graph execution is staged into different pipeline steps.
 Pipeline step execution can subsequently be overlapped across different GPUs.
 This means that while execution of pipeline step 1 on GPU 1 for a particular input batch is happening, execution of pipeline step 2 on GPU 2 for another batch can happen simultaneously.
+In the case of model pipeline parallelism, a step typically refers to a layer (or layers) of a particular neural network architecture used in the model.
 An example on how this can be applied onto the example in PLACEHOLDER: TRAINING EXAMPLE IN SRC/CONTENT/DOCS/OPTIMILIZATION/BEGINNER/SYNCHRONIZATION in a single-node multi-gpu situation is provided below:
 
 ```
@@ -352,39 +353,74 @@ class Net(nn.Module):
 
 
 def train(args, model, device, train_loader, optimizer, epoch, rank):
-    model.train()
-    for batch_idx, (data, target) in enumerate(train_loader):
-        data, target = data.to(device), target.to(device)
-        optimizer.zero_grad()
-        output = model(data)
-        loss = F.nll_loss(output, target)
-        loss.backward()
-        optimizer.step()
-        if batch_idx % args.log_interval == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+
+	model.stage.submodule.train()
+    
+	for batch_idx, (data, target) in enumerate(train_loader):
+	
+		# Make sure that all processes have finished the forward/backward computation step prior to considering a new batch
+		dist.barrier()
+		optimizer.zero_grad()
+	
+		# Note: in case of more granular pipelining, intermediate layers call .step() without involvement of data, target
+		if rank == 0:
+			data = data.to(device)
+			output = model.step(data)
+		
+		elif rank == 1:
+			loss_list = []
+			target = target.to(device)
+			output = model.step(target=target, losses=loss_list)
+
+			if batch_idx % args.log_interval == 0:
+				print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), loss.item()))
+                100. * batch_idx / len(train_loader), loss_list[0].item()))
+		
+		else:
+			raise ValueError("This distributed pipeline program requires 2 GPUs to function.")
+
+		optimizer.step()
+		dist.barrier()
+
+		# If we need to break for a test run, break all processes after the barrier has been reached
+        if batch_idx % args.log_interval == 0:
             if args.dry_run:
                 break
 
 
 def test(model, device, test_loader, rank):
-    model.eval()
+
     test_loss = 0
     correct = 0
+
+    model.stage.submodule.eval()
     with torch.no_grad():
-        for data, target in test_loader:
-            data, target = data.to(device), target.to(device)
-            output = model(data)
-            test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
-            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
-            correct += pred.eq(target.view_as(pred)).sum().item()
+	
+		for data, target in test_loader:
+		
+			if rank == 0:
+				data = data.to(device)
+				output = model.step(data)
+			
+			elif rank == 1:
+				loss_list = []
+				target = target.to(device)
+				output = model.step(target=target, losses=loss_list)
+				
+				test_loss += torch.sum(loss_list[0]).item()  # sum up batch loss
+				pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+				correct += pred.eq(target.view_as(pred)).sum().item()
+			
+			else:
+				raise ValueError("This distributed pipeline program requires 2 GPUs to function.")
 
-    test_loss /= len(test_loader.dataset)
+		if rank == 1:
+			test_loss /= len(test_loader.dataset)
 
-    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
+			print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+				test_loss, correct, len(test_loader.dataset),
+				100. * correct / len(test_loader.dataset)))
 
 
 def worker(rank, world_size, gpu_count, device_type, bsize, test_bsize, lr, gamma, save_model, epochs, fraction):
