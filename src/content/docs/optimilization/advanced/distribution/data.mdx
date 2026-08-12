@@ -551,10 +551,91 @@ In most typical machine learning pipelines, tensor parallelism is not necessary.
 The idea behind [tensor parallelism](https://docs.pytorch.org/tutorials/intermediate/TP_tutorial.html) is that parts of a matrix multiply-accumulate operation are sharded across different GPUs.
 This is helpful in situations where the world size of a distrbuted machine learning training procedure becomes so large to the extent that communication latency becomes a bottleneck.
 In this case, the decision can be made to limit communication by introducing intra-node tensor parallelism while applying another distributed training procedure inter-node.
+Because the amount of GPUs inside the Spike-1 cluster is limited, this level of world size is never going to be reached.
 Because support for tensor parallelism is limited to ***nn.Linear, nn.Embedding, nn.LayerNorm, nn.Dropout***, we will not provide a simple example.
-In what follows, we briefly elaborate on how parallelism can be configured for portions of a ***nn.Module*** class depicting a transformer architecture.
+In what follows, we briefly show how parallelism can be configured for portions of a ***nn.Module*** class depicting a transformer architecture for a GPU group while replicating over multiple GPU groups in data parallel form.
 
 ```
+...
+
+import torch
+import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel
+from torch.distributed.device_mesh import init_device_mesh
+from torch.distributed.tensor.parallel import parallelize_module, ColwiseParallel, RowwiseParallel
+
+...
+
+def worker(rank, world_size, gpu_count, device_type, bsize, test_bsize, lr, gamma, save_model, epochs, fraction):
+
+	if device_type == "cuda":
+		dist.init_process_group("nccl", rank=rank, world_size=world_size)
+		device = torch.device(device_type, rank)
+
+	else:
+		dist.init_process_group("gloo", rank=rank, world_size=world_size)
+		device = torch.device(device_type)
+
+	# Create process groups to manage 2-D like parallel pattern where 4 groups of 2 GPUs are used for data parallelism.
+	# Inside every group, 2 GPUs are used for tensor parallel sharding.
+	mesh = init_device_mesh(
+        device_type=device_type, 
+        mesh_shape=(4, 2), 
+        mesh_dim_names=("dp", "tp")
+    )
+	tp_group = mesh["tp"].get_group()
+	dp_group = mesh["dp"].get_group()
+
+	...
+
+    model = TransformerModel()
+	for layer_id, transformer_block in enumerate(model.layers):
+	
+		layer_tp_plan = {
+			# by default ColwiseParallel input layouts is replicated
+			# and RowwiseParallel output layouts is replicated
+			"attention.wq": ColwiseParallel(use_local_output=False),
+			"attention.wk": ColwiseParallel(use_local_output=False),
+			"attention.wv": ColwiseParallel(use_local_output=False),
+			"attention.wo": RowwiseParallel(),
+			"feed_forward.w1": ColwiseParallel(),
+			"feed_forward.w2": RowwiseParallel(),
+			"feed_forward.w3": ColwiseParallel()
+		}
+
+		parallelize_module(
+			module=transformer_block,
+			device_mesh=tp_group,
+			parallelize_plan=layer_tp_plan,
+		)
+	
+	model = parallelize_module(
+		model,
+		tp_group,
+		{
+			"tok_embeddings": RowwiseParallel(
+				input_layouts=Replicate(),
+			),
+			"output": ColwiseParallel(
+				output_layouts=Replicate(),
+			),
+		}
+	)
+
+	model.to(device)
+	ddp_model = DistributedDataParallel(model, device_ids=device, process_group=dp_group)
+	
+    optimizer = optim.Adadelta(ddp_model.parameters(), lr=lr)
+    scheduler = StepLR(optimizer, step_size=1, gamma=gamma)
+	
+    for epoch in range(1, epochs + 1):
+        train(..., ddp_model, device, train_loader, optimizer, epoch)
+        test(ddp_model, device, test_loader)
+        scheduler.step()
+
+    ...
+
+...
 ```
 
 ## Full sharding
