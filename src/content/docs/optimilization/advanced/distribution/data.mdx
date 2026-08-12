@@ -428,7 +428,7 @@ def worker(rank, world_size, gpu_count, device_type, bsize, test_bsize, lr, gamm
 	if device_type == "cuda":
 		dist.init_process_group("nccl", rank=rank, world_size=world_size)
 		device = torch.device(device_type, rank)
-		
+
 	else:
 		dist.init_process_group("gloo", rank=rank, world_size=world_size)
 		device = torch.device(device_type)
@@ -546,6 +546,16 @@ if __name__ == '__main__':
 ```
 
 ## Tensor parallel
+
+In most typical machine learning pipelines, tensor parallelism is not necessary.
+The idea behind [tensor parallelism](https://docs.pytorch.org/tutorials/intermediate/TP_tutorial.html) is that parts of a matrix multiply-accumulate operation are sharded across different GPUs.
+This is helpful in situations where the world size of a distrbuted machine learning training procedure becomes so large to the extent that communication latency becomes a bottleneck.
+In this case, the decision can be made to limit communication by introducing intra-node tensor parallelism while applying another distributed training procedure inter-node.
+Because support for tensor parallelism is limited to ***nn.Linear, nn.Embedding, nn.LayerNorm, nn.Dropout***, we will not provide a simple example.
+In what follows, we briefly elaborate on how parallelism can be configured for portions of a ***nn.Module*** class depicting a transformer architecture.
+
+```
+```
 
 ## Full sharding
 
