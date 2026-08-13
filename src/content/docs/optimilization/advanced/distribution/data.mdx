@@ -11,6 +11,8 @@ sensitivity: public
 
 import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
+import StandardConfig from '../../../assets/distribution/select_standard.png';
+import MultiGpuConfig from '../../../assets/distribution/select_multiple_gpus.png';
 
 <DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
 
@@ -84,6 +86,7 @@ In federated learning, local data processing and sharing model parameters is req
 
 For the explanations that follow, we assume you are familiar with the simple model training example in PLACEHOLDER: OPTIMILIZATION/BEGINNER/SYNCHRONIZATION.
 In the example, a dataset/dataloader is responsible for copying MNIST dataset batches to RAM, the Module object and batches are synchronized onto a device by means of the ***Module.to(device)*** and ***Tensor.to(device)*** methods, and module parameters are trained.
+If you would like to read more about all potential different distribution configurations, including the effect on computation and communication efficiency, we recommend the [The Ultra-Scale Playbook](https://huggingface.co/spaces/nanotron/ultrascale-playbook).
 
 ## Configure data loading for distribution
 
@@ -856,10 +859,26 @@ if __name__ == '__main__':
 
 ## Multi-GPU run:ai launching
 
-### Run:ai user interface
+### Run:ai user interface standard training configuration
+
+<img src={StandardConfig} alt="Workload architecture element in the Run:ai workload submit interface in which a standard (single-node non-elastic) configuration has been enabled." />
+
+### Run:ai user interface configuration of multiple GPUs
+
+<img src={MultiGpuConfig} alt="Compute resources element in the Run:ai workload submit interface in which multiple GPUs have been enabled." />
+
 ### Run:ai command-line interface
 
+```
+# See command-line option --gpu-devices-request
+runai training submit a-test-workload -i harbor.spike.tue.nl/aiteam/pretrainingcontainer:latest -p aiteam --existing-pvc claimname=aiteam,path=/data --user-group-source fromTheImage --cpu-core-limit 7 --cpu-core-request 7 --cpu-memory-limit 64G --cpu-memory-request 64G --gpu-devices-request 4 --command -- bash -lc 'cd /data; python3 feature_extraction_eval.py --start_index 18999 --end_index 20000 --model_name exported_step_100000.pt'
+```
+
 ## Elastic run:ai launching
+
+### Run:ai user interface distributed training configuration
+
+### Run:ai command-line interface distributed training configuration
 
 ## Effect of NVLink and NCCL on communication efficiency
 
