@@ -86,7 +86,7 @@ In federated learning, local data processing and sharing model parameters is req
 
 For the explanations that follow, we assume you are familiar with the simple model training example in PLACEHOLDER: OPTIMILIZATION/BEGINNER/SYNCHRONIZATION.
 In the example, a dataset/dataloader is responsible for copying MNIST dataset batches to RAM, the Module object and batches are synchronized onto a device by means of the ***Module.to(device)*** and ***Tensor.to(device)*** methods, and module parameters are trained.
-If you would like to read more about all potential different distribution configurations, including the effect on computation and communication efficiency, we recommend the [The Ultra-Scale Playbook](https://huggingface.co/spaces/nanotron/ultrascale-playbook).
+If you would like to read more in-depth material about all potential different distribution configurations, including quantitative results depicting the effect on computation and communication efficiency, we recommend the [The Ultra-Scale Playbook](https://huggingface.co/spaces/nanotron/ultrascale-playbook).
 
 ## Configure data loading for distribution
 
@@ -875,6 +875,12 @@ runai training submit a-test-workload -i harbor.spike.tue.nl/aiteam/pretrainingc
 ```
 
 ## Elastic run:ai launching
+
+So far in all aforementioned examples we have been using the ***torch.multiprocessing.spawn*** method for spinning up multiple processes locally.
+Each process is asked to execute the implemented worker method with provided arguments.
+Unfortunately, ***torch.multiprocessing.spawn*** does not scale beyond the confines of a single DGX B200 node.
+To account for message passing alongside both local and inter-node processes, PyTorch includes the ***torch.distributed.run*** console script.
+This console script can in turn be given a training script which you can configure yourself.
 
 ### Run:ai user interface distributed training configuration
 
