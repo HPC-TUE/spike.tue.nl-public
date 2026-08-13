@@ -649,7 +649,215 @@ def worker(rank, world_size, gpu_count, device_type, bsize, test_bsize, lr, gamm
 
 ## Full sharding
 
+For a dataset and neural network architecture that keeps scaling, it is typically advised to increase the number of involved model replicas across GPUs in a data parallel training procedure.
+Additionally, further configuration of sharding alongside a GPU mesh group for both (a set of) layer(s) and tensor is typically advised.
+As you might have already seen in the earlier examples, additional configuration of a mesh group and static layer splitting feels clunky and does not follow the code modularization standard.
+This limits widespread adoption of very-large model and dataset training to a handful of engineers that have been instructed to apply configuration because the stakeholder value to be gained is high enough.
+In response to the clunkiness and the desire to further allow scaling according to the modularization standard, [Fully Sharded Data Parallelism](https://doi.org/10.14778/3611540.3611569) (FSDP) was invented as a new distribution procedure.
+
+FSDP works with help of a sharding factor F.
+When F = 1, FSDP acts in a normal distributed data parallel way (see the subsection on Data parallel distribution) by limiting distribution to single GPU neural network replica groups.
+When 1 < F <= n_gpus, a device mesh according to the factor is enabled whereby arbitrary sharding is applied in a particular inner mesh group.
+Arbitrary sharding involves proportional distribution of for example rows and or columns for all layers along GPUs in the inner mesh group.
+For the sake of simplicity, we consider loss and gradient distribution outside the scope of this discussion.
+Prior to applying a forward or backward pass, gather-scatter communication operations are performed for the row-wise and or column-wise parallel matrix multiplication calculations.
+The passes are awaited for by means of a join operation after which gradients are all-reduced.
+Finding the correct shards required for the computation requires a sophisticated GPU routing mechanism.
+For example, matrix row and or column indexes with layer name can be given to a hashing algorithm.
+The hash is subsequently used to calculate a GPU index alongside a ring (for more information see an example of the [distributed hash table](https://doi.org/10.1145/964723.383071) algorithm).
+In what follows, we provide a brief small example on how FSDP can be configured:
+
+```
+import os
+import argparse
+import functools
+import torch
+import torch.nn as nn
+import torch.distributed as dist
+import torch.multiprocessing as mp
+import torch.nn.functional as F
+import torch.optim as optim
+from torchvision import datasets, transforms
+from torch.optim.lr_scheduler import StepLR
+from torch.distributed.fsdp import FullyShardedDataParallel, ShardingStrategy
+
+
+class Net(nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+        self.conv1 = nn.Conv2d(1, 32, 3, 1)
+        self.conv2 = nn.Conv2d(32, 64, 3, 1)
+        self.dropout1 = nn.Dropout(0.25)
+        self.dropout2 = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(9216, 128)
+        self.fc2 = nn.Linear(128, 10)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, 2)
+        x = self.dropout1(x)
+        x = torch.flatten(x, 1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.dropout2(x)
+        x = self.fc2(x)
+        output = F.log_softmax(x, dim=1)
+        return output
+
+
+def train(args, model, device, train_loader, optimizer, epoch):
+    model.train()
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)
+        optimizer.zero_grad()
+        output = model(data)
+        loss = F.nll_loss(output, target)
+        loss.backward()
+        optimizer.step()
+        if batch_idx % args.log_interval == 0:
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                epoch, batch_idx * len(data), len(train_loader.dataset),
+                100. * batch_idx / len(train_loader), loss.item()))
+            if args.dry_run:
+                break
+
+
+def test(model, device, test_loader):
+    model.eval()
+    test_loss = 0
+    correct = 0
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
+            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            correct += pred.eq(target.view_as(pred)).sum().item()
+
+    test_loss /= len(test_loader.dataset)
+
+    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+        test_loss, correct, len(test_loader.dataset),
+        100. * correct / len(test_loader.dataset)))
+
+
+def custom_auto_wrap_policy(
+    module: nn.Module,
+    recurse: bool,
+    nonwrapped_numel: int,
+    # Additional custom arguments
+    min_num_params: int = int(1e8),
+) -> bool:
+    return nonwrapped_numel >= min_num_params
+
+
+def worker(rank, world_size, gpu_count, device_type, bsize, test_bsize, lr, gamma, save_model, epochs, fraction):
+
+	# Please note that the Nvidia NCCL library is currently limited to a single process per GPU device.
+	# Therefore, fraction should always equate to 1.0 when using NCCL (this might work with other message passing interfaces)
+	# We keep applying a fraction part of the example because this might change in the future in case fractioning is adopted by NCCL
+	if device_type == "cuda":
+		dist.init_process_group("nccl", rank=rank, world_size=world_size)
+		device_id = rank % gpu_count
+		device = torch.device(device_type, device_id)
+		torch.cuda.set_per_process_memory_fraction(fraction, device)
+
+	else:
+		dist.init_process_group("gloo", rank=rank, world_size=world_size)
+		device = torch.device(device_type)
+
+	train_kwargs = {'batch_size': bsize, 'transform': transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])}
+    test_kwargs = {'batch_size': test_bsize, 'transform': transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])}
+
+    if device_type == "cuda":
+        cuda_kwargs = {'num_workers': 1,
+                       'pin_memory': True,
+                       'shuffle': True,
+					  }
+        train_kwargs.update(cuda_kwargs)
+        test_kwargs.update(cuda_kwargs)
+
+	// Configure train_loader, test_loader according to the dataset/dataloader example provided above
+	// Note: provide train_kwargs, test_kwargs to dataloaders as well
+	...
+
+    model = Net().to(device)
+	my_auto_wrap_policy = functools.partial(custom_auto_wrap_policy, min_num_params=int(1e5))
+	fsdp_model = FullyShardedDataParallel(model, device_id=device, auto_wrap_policy=my_auto_wrap_policy, sharding_strategy=ShardingStrategy.HYBRID_SHARD)
+	
+    optimizer = optim.Adadelta(fsdp_model.parameters(), lr=lr)
+    scheduler = StepLR(optimizer, step_size=1, gamma=gamma)
+	
+    for epoch in range(1, epochs + 1):
+        train(..., fsdp_model, device, train_loader, optimizer, epoch)
+        test(fsdp_model, device, test_loader)
+        scheduler.step()
+
+    if save_model:
+
+		# Ensure that all processes have reached this point such that no updates are still being performed
+		dist.barrier()
+		# TO-DO: add saving in case of FSDP
+
+
+def main():
+
+    # Training settings
+    parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
+    parser.add_argument('--batch-size', type=int, default=64, metavar='N',
+                        help='input batch size for training (default: 64)')
+    parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
+                        help='input batch size for testing (default: 1000)')
+    parser.add_argument('--epochs', type=int, default=14, metavar='N',
+                        help='number of epochs to train (default: 14)')
+    parser.add_argument('--lr', type=float, default=1.0, metavar='LR',
+                        help='learning rate (default: 1.0)')
+    parser.add_argument('--gamma', type=float, default=0.7, metavar='M',
+                        help='Learning rate step gamma (default: 0.7)')
+    parser.add_argument('--fraction', type=float, default=1.0, metavar='M',
+                        help='offset GPU count by applied software-enforced fraction (default: 1.0)')						
+    parser.add_argument('--no-cuda', action='store_true', default=False,
+                        help='disables CUDA training')
+    parser.add_argument('--dry-run', action='store_true', default=False,
+                        help='quickly check a single pass')
+    parser.add_argument('--seed', type=int, default=1, metavar='S',
+                        help='random seed (default: 1)')
+    parser.add_argument('--log-interval', type=int, default=10, metavar='N',
+                        help='how many batches to wait before logging training status')
+    parser.add_argument('--save-model', action='store_true', default=False,
+                        help='For Saving the current Model')
+
+	args = parser.parse_args()
+    use_cuda = not args.no_cuda and torch.cuda.is_available()
+
+    if use_cuda:
+        device_str = "cuda"
+    else:
+        device_str = "cpu"
+
+	gpu_count = torch.cuda.device_count()
+	process_count = int(gpu_count / args.fraction) if use_cuda else 8
+
+    mp.spawn(worker,
+        args=(process_count, gpu_count, device_str, args.batch_size, args.test_batch_size, args.lr, args.gamma, args.save_model, args.epochs, args.fraction),
+        nprocs=process_count,
+        join=True)
+
+
+if __name__ == '__main__':
+	# Rendezvous location where process access information is communicated to
+	os.environ["MASTER_ADDR"] = "localhost"
+    os.environ["MASTER_PORT"] = "29500"
+    main()
+```
+
 ## Multi-GPU run:ai launching
+
+### Run:ai user interface
+### Run:ai command-line interface
 
 ## Elastic run:ai launching
 
