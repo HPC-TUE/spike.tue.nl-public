@@ -684,7 +684,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
-from torch.distributed.fsdp import FullyShardedDataParallel, ShardingStrategy
+from torch.distributed.fsdp import FullyShardedDataParallel, ShardingStrategy, FullStateDictConfig, StateDictType
 
 
 class Net(nn.Module):
@@ -805,7 +805,14 @@ def worker(rank, world_size, gpu_count, device_type, bsize, test_bsize, lr, gamm
 
 		# Ensure that all processes have reached this point such that no updates are still being performed
 		dist.barrier()
-		# TO-DO: add saving in case of FSDP
+		
+		# Ensure that the entire model, in RAM, once unsharded, fits
+		save_policy = FullStateDictConfig(offload_to_cpu=True, rank0_only=True)
+		with FSDP.state_dict_type(fsdp_model, StateDictType.FULL_STATE_DICT, save_policy):
+			state_dict = model.state_dict()
+
+		if rank == 0:
+			torch.save(state_dict, "trained_fsdp_model.pt")
 
 
 def main():
