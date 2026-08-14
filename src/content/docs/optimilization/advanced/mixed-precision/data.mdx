@@ -1,0 +1,30 @@
+---
+title: Faster training and less RAM usage with mixed-precision for advanced users
+description: Configure mixed-precision, and understand configuration consequences, in the context of memory or compute bounds
+audience: Researchers
+maturity: Verified
+lastVerified: 2026-07-21
+products: [Run:ai]
+sourceRefs: [runai_guide, SSH-container, GPU-direct-storage]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
+
+## Configuration of different graph operators at varying precisions
+
+[Nvfp4](https://arxiv.org/abs/2509.25149)
+
+## 64-bit floating-point emulation in dgemm and zgemm kernels
+
+[CUDA Examples](https://github.com/NVIDIA/CUDALibrarySamples/tree/master/cuBLAS/Emulation)
+[Environment settings](https://docs.nvidia.com/cuda/cublas/index.html#floating-point-emulation)
+[Ozaki scheme I](https://doi.org/10.1177/10943420241239588)
+
+<NextSteps links={[
+  { href: '/access/terminal/', label: 'Use terminal access safely' },
+  { href: '/workloads/training/', label: 'Attach storage to a workload' },
+]} />
