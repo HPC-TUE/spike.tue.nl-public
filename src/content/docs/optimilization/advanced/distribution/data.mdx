@@ -13,6 +13,8 @@ import DocMeta from '../../../components/DocMeta.astro';
 import NextSteps from '../../../components/NextSteps.astro';
 import StandardConfig from '../../../assets/distribution/select_standard.png';
 import MultiGpuConfig from '../../../assets/distribution/select_multiple_gpus.png';
+import DistConfig from '../../../assets/distribution/select_distributed.png';
+import MultiGpuElasticConfig from '../../../assets/distribution/select_multiple_gpus_elastically.png';
 
 <DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
 
@@ -879,14 +881,48 @@ runai training submit a-test-workload -i harbor.spike.tue.nl/aiteam/pretrainingc
 So far in all aforementioned examples we have been using the ***torch.multiprocessing.spawn*** method for spinning up multiple processes locally.
 Each process is asked to execute the implemented worker method with provided arguments.
 Unfortunately, ***torch.multiprocessing.spawn*** does not scale beyond the confines of a single DGX B200 node.
+Therefore, ***torch.multiprocessing.spawn*** is only suitable for distributed training and evaluation processes which require access to <= 8 GPUs.
 To account for message passing alongside both local and inter-node processes, PyTorch includes the ***torch.distributed.run*** console script.
-This console script can in turn be given a training script which you can configure yourself.
+This console script can in turn be given a worker training and evaluation script (it should therefore ONLY include the functionality of the worker function in previous examples) which you can configure yourself.
+
+When we take a deeper look into the ***torch.distributed.run*** console script, we can see that the ***argparse*** package is used to read node, process, and process rendezvous settings.
+Additionally, when settings are not provided by the user as script arguments, the custom ***torch.distributed.argparse_util.env*** argparse action method reads these arguments from environment variables.
+These environment variables are injected automatically into the pod container by the GPU Operator stack when configuring distributed training in the Run:ai interface.
+Another interesting observation is that during worker launch, a [health check server](https://github.com/pytorch/pytorch/blob/main/torch/distributed/launcher/api.py#L314) is setup. 
+This health server accounts for a potentially long [rendezvous](https://docs.pytorch.org/docs/2.13/elastic/rendezvous.html) procedure before a network information key-value store is ready by making sure network ports are healthy.
+Therefore, if you are considering distributed training with a total amount of GPUs <= 8, to circumvent initial long experiment initialization time, we recommend distributed launching with ***torch.multiprocessing.spawn***.
+
+Even though rendezvous introduces additional experiment time for both initialization and information synchronization, it opens up the door to some interesting new distribution procedures.
+Recall from the sections Data parallel and Fully sharded data parallel that each GPU (or GPU mesh group) uses a graph replica for processing of an additional batch size tensors.
+In case the DGX nodes are underutilized at some point, it is nice that the distributed training process can account for this by increasing the replica group, thereby being able to process more batches.
+This is typically referred to as elastic distributed launching.
+Additionally, when there is no need for inter-process synchronization (typically the case for bag-of-task processes), a distributed training process can also be performed master-less.
 
 ### Run:ai user interface distributed training configuration
 
+<img src={DistConfig} alt="Workload architecture element in the Run:ai workload submit interface in which a distributed (elastic and or master-less) configuration has been enabled." />
+
+### Run:ai user interface distributed training elastic configuration of multiple GPUs
+
+<img src={MultiGpuElasticConfig} alt="Compute resources element in the Run:ai workload submit interface in which multiple workers have been enabled. The workers each have an attached GPU and the workload is allowed to scale elastically." />
+
 ### Run:ai command-line interface distributed training configuration
 
+```
+# See the change from training submit to training pytorch submit, the command-line option --workers, and options --min-replicas, --max-replicas
+runai training pytorch submit a-test-workload -i harbor.spike.tue.nl/aiteam/pretrainingcontainer:latest -p aiteam --existing-pvc claimname=aiteam,path=/data --user-group-source fromTheImage --cpu-core-limit 7 --cpu-core-request 7 --cpu-memory-limit 64G --cpu-memory-request 64G --gpu-devices-request 1 --workers 16 --min-replicas 1 --max-replicas 16 --command -- bash -lc 'cd /data; python3 feature_extraction_eval.py --start_index 18999 --end_index 20000 --model_name exported_step_100000.pt'
+```
+
 ## Effect of NVLink and NCCL on communication efficiency
+
+In standard servers, GPUs typically interface over a PCIe interconnect.
+The total PCIe interconnect bandwidth for Gen 5.0 16 slots is limited bidirectionally to 128 GB/s.
+Nvidia also offers their own GPU-to-GPU interconnect system called [NVLink](https://developer.nvidia.com/blog/how-nvlink-will-enable-faster-easier-multi-gpu-computing/).
+The total NVLink interconnect bandwidth for Gen 5.0 (compatible with the Blackwell architecture) is limited bidirectionally to 1800 GB/s.
+This means that GPU-to-GPU inter-process communication is an order of magnitude faster over NVLink, provided that the volume of information to be communicated scales accordingly.
+The Nvidia communication library NCCL has the ability to recognize NVLink and to fallback to PCIe communication when access to a NVLink interconnect network is not found.
+All Spike-1 DGX nodes contain B200 GPUs which have been interconnected with NVLink technology using NVswitch hardware in a so-called mesh configuration.
+This is especially helpful in a situation where arbitrary sharding can occur, especially in the situation of FSDP.
 
 <NextSteps links={[
   { href: '/access/terminal/', label: 'Use terminal access safely' },
