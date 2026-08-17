@@ -1,6 +1,6 @@
 ---
 title: Faster training and less RAM usage with mixed-precision for advanced users
-description: Configure mixed-precision, and understand configuration consequences, in the context of memory or compute bounds
+description: Configure mixed-precision, and understand configuration consequences, in the context of model performance, memory, and/or compute bounds
 audience: Researchers
 maturity: Verified
 lastVerified: 2026-07-21
@@ -14,7 +14,55 @@ import NextSteps from '../../../components/NextSteps.astro';
 
 <DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
 
+Over the last years, machine learning model pipeline size, due to rapid parameter expansion, has been expanding at a large growth rate.
+This rate is typically facilitated by a less stringent inductive bias present in attention-based mechanisms.
+Together with increasing dataset sizes, the less stringent inductive bias allows model pipelines to generalize better to a task it needs to perform.
+This shifts the scaling ceiling from parameter fit in the context of dataset size and task to the speed at which parameters can be trained effectively.
+The speed is controlled by a set of factors including, but not limited to, 1) available vRAM, 2) accelerator ratio, and 3) peak T(FL)OPS accelerators can provided at a particular timestamp.
+These factors, including how processing of parameters and tensor operations at different levels of precision influences these factors, take main stage in this knowledge article.
+For the examples in the following subsections, we assume you are familiar with the simple model training example in PLACEHOLDER: OPTIMILIZATION/BEGINNER/SYNCHRONIZATION.
+In the example, a dataset/dataloader is responsible for copying MNIST dataset batches to RAM, the Module object and batches are synchronized onto a device by means of the ***Module.to(device)*** and ***Tensor.to(device)*** methods, and module parameters are trained.
+
 ## Configuration of different graph operators at varying precisions
+
+Historically, machine learning model pipeline parameter training was exclusively performed with the 32-bit floating-point datatype.
+The choice for this datatype is controlled by the resolution range that this data type provides, and how well it connects to the typical resolution range a parameter optimization process converges at.
+Additionally, the chosen resolution should not cause gradients to vanish beyond the resolution range, resulting in gradients clipped at 0.
+One of the earliest accounts of altering the precision of graph operators involves [training at 16-bit floating-point precision](https://arxiv.org/abs/1710.03740), loss scaling, and storing a master copy of parameters at 32-bit floating-point precision.
+This reduces computational complexity because the peak T(FL)OPS at which operations involved in particular layers are processed at increases from FP32 to FP16 TFLOPS.
+Additionally, vRAM storage requirements for local layer weights and intermediate layer representations is effectively halved.
+This storage requirement is slight negatively influenced by the requirement for storing a master weight copy at FP32 datatype level.
+Training at 16-bit floating-point precision can be configured in PyTorch with help of the ***torch.amp*** package.
+The following example illustrates how ***torch.amp*** can be configured in the ***train()*** method from the earlier referenced example:
+
+```
+import torch
+
+...
+
+def train(args, model, device, train_loader, optimizer, epoch, scaler):
+    model.train()
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)
+		
+		with torch.cuda.amp.autocast(enabled=True):
+			output = model(data)
+			loss = F.nll_loss(output, target)
+        
+		# Scaler: instance of torch.cuda.amp.GradScaler(enabled=True)
+		scaler.scale(loss).backward()
+		scaler.step(optimizer)
+		scaler.update()
+		optimizer.zero_grad()
+        
+        if batch_idx % args.log_interval == 0:
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                epoch, batch_idx * len(data), len(train_loader.dataset),
+                100. * batch_idx / len(train_loader), loss.item()))
+            if args.dry_run:
+                break
+...
+```
 
 [Nvfp4](https://arxiv.org/abs/2509.25149)
 
