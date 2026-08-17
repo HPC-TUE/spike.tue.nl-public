@@ -74,9 +74,24 @@ PyTorch can be configured as a computation backend when using the ***Transformer
 
 ## 64-bit floating-point emulation in dgemm and zgemm kernels
 
-[CUDA Examples](https://github.com/NVIDIA/CUDALibrarySamples/tree/master/cuBLAS/Emulation)
+Utilizing 4-bit floating-point precision at different linear graph operators in a transformer-style machine learning pipeline is becoming more and more popular.
+This has lead to drastic changes in the accelerator ratios Nvidia incorporates in new hardware architectures.
+The support for the high-precision 64-bit floating-point accelerator is gradually being phased out.
+This is illustrated by the recent change in the [ratio](https://doi.org/10.1177/10943420241313064) of supported 64-bit and 32-bit floating-point tensor core accelerators between the Hopper and Blackwell architectures: 7.4 vs. 27.5.
+The ratio is expected to increase in future Nvidia hardware architectures leading to significant 64-bit floating-point accelerator contention when kernels are executed on a GPU.
+This is problematic for traditional high-performance simulation applications or physics-based calculations involved in the machine learning pipeline which rely on 64-bit floating-point precision.
+The need for this precision stems from correct representation of high-resolution constants (e.g. speed of light) or involved operations which are sensitive to small floating-point changes.
+
+In response, alongside the 64-bit floating-point accelerator gradually being phased out, Nvidia has increased the effort in providing better support for 64-bit floating-point emulation.
+The idea of emulation is that with appropriate exponent alignment and mantissa split operations, the gemm operations can be [offloaded](https://doi.org/10.1177/10943420241239588) to 8-bit integer accelerators.
+After the gemm operation has been performed, the 64-bit floating-point accelerator is only used for a sum reduction operation back into 64-bit floating-point resolution.
+A sum reduction operation generally involves much less FLOPS in comparison to a gemm operation and the large count of 8-bit integer accelerators on the B200 GPU makes time complexity as a result of accelerator contention of the gemm TOPS negligible.
+
+Support for 64-bit floating-point emulation has been added since cuBLAS 13.0.2 for the [dense gemm operators](https://github.com/NVIDIA/CUDALibrarySamples/tree/master/cuBLAS/Emulation) dgemm (64-bit float) and zgemm (128-bit complex).
+Support for batched gemm, sparse gemm, and [triangular solving](https://github.com/RIKEN-RCCS/GEMMul8), and better acceleration support for [large matrix sizes](https://doi.org/10.1177/10943420261467787) is expected to arrive in the near future.
+In what follows, we show how cuBLAS can be configured to utilize 64-bit floating-point emulation by means of environment variables:
+
 [Environment settings](https://docs.nvidia.com/cuda/cublas/index.html#floating-point-emulation)
-[Ozaki scheme I](https://doi.org/10.1177/10943420241239588)
 
 <NextSteps links={[
   { href: '/access/terminal/', label: 'Use terminal access safely' },
