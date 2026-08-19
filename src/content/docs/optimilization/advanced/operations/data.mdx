@@ -1,6 +1,6 @@
 ---
 title: Building CUDA/C++ extensions for PyTorch for advanced users
-description: Write kernels and launch functions, and configure build settings, in the context of usage in PyTorch nn.Module layer definitions
+description: Write kernels and launch functions, and configure bind settings, in the context of usage in PyTorch function definitions
 audience: Researchers
 maturity: Verified
 lastVerified: 2026-07-21
@@ -14,7 +14,7 @@ import NextSteps from '../../../components/NextSteps.astro';
 
 <DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
 
-## Method interface for writing a CUDA/C++ extension
+## Interface for writing a CUDA/C++ extension
 
 Writing a PyTorch extension starts at C++ level with a CUDA kernel and a host launch function.
 The CUDA kernel takes in flat array pointers pointing to a base memory location in vRAM.
@@ -68,7 +68,94 @@ For a gemm, this means that CUDA kernels and host launch functions need to be pr
 These partial derivatives are respectively: grad_A = grad_output * B^T, grad_B = A^T * grad_output.
 For more information regarding known combinations of forward and partial derivative backward combinations, we refer to Bob Carpenter's [automatic differentation handbook](https://github.com/bob-carpenter/ad-handbook).
 
-## Configuring (build) settings
+## Configuring (bind) settings
+
+For configuring bind settings, we take the mixed-precision 4-bit floating-point example for a PyTorch ***torch.matmul*** function.
+For more information regarding mixed-precision training, we refer to PLACEHOLDER: src/content/docs/optimilization/advanced/mixed-precision.
+In addition to the forward gemm kernel and partial gradient kernels, mixed-precision operations also require [quantization](https://docs.pytorch.org/ao/main/workflows/training.html#quantized-training).
+Quantization of the considered datatype is used to keep layers and functions operable with other layers and functions.
+We assume that the gemm, backward gradients, and quantization kernels / launch functions have been saved in the following files: gemm.cu, grad.cu, quantize.cu.
+In addition to the kernels and launch functions, a C++ binding file (bindings.cpp) should be supplied as well.
+The binding file uses the Python package ***pybind11*** to expose the kernels and launch functions to configuration in Python:
+
+```
+#include <torch/extension.h>
+
+// Forward declarations for functions defined in the CUDA files.
+torch::Tensor fp4_quantize(torch::Tensor input);
+torch::Tensor fp4_dequantize(torch::Tensor input);
+torch::Tensor fp4_matmul(torch::Tensor A, torch::Tensor B);
+torch::Tensor fp4_matmul_backward_A(torch::Tensor grad_output, torch::Tensor B);
+torch::Tensor fp4_matmul_backward_B(torch::Tensor A, torch::Tensor grad_output);
+
+PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+  m.def("fp4_quantize", &fp4_quantize, "Quantize tensor to FP4 using __nv_fp4_e2m1");
+  m.def("fp4_dequantize", &fp4_dequantize, "Dequantize tensor from FP4");
+  m.def("fp4_matmul", &fp4_matmul, "Optimized FP4 matmul with asynchronous copies, double buffering, and loop unrolling");
+  m.def("fp4_matmul_backward_A", &fp4_matmul_backward_A, "Backward kernel for FP4 matmul (grad_A)");
+  m.def("fp4_matmul_backward_B", &fp4_matmul_backward_B, "Backward kernel for FP4 matmul (grad_B)");
+}
+```
+
+The bindings are imported into PyTorch by means of the ***torch.utils.cpp_extension.load*** function.
+Subsequently, custom PyTorch functions with support for automatic differentiation is created:
+
+```
+from torch.utils.cpp_extension import load
+import torch
+import os
+
+this_dir = os.path.dirname(os.path.abspath(__file__))
+
+fp4_ext = load(
+    name="fp4_ext",
+    sources=[
+        f"{this_dir}/gemm.cu",
+        f"{this_dir}/grad.cu",
+        f"{this_dir}/quantize.cu",
+        f"{this_dir}/bindings.cpp"
+    ],
+    verbose=False
+)
+
+
+class FP4MatMulFunction(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, A, B):
+        ctx.save_for_backward(A, B)
+        out_fp4 = fp4_ext.fp4_matmul(A, B)
+        return out_fp4
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        A, B = ctx.saved_tensors
+        # Compute gradient with respect to A and B using custom backward kernels.
+        grad_A = fp4_ext.fp4_matmul_backward_A(grad_output, B)
+        grad_B = fp4_ext.fp4_matmul_backward_B(A, grad_output)
+        return grad_A, grad_B
+
+
+class FP4QuantizeFunction(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, input):
+        quantized = fp4_ext.fp4_quantize(input)
+        return quantized.view_as(input)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        return grad_output
+
+
+class FP4DequantizeFunction(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, input):
+        dequantized = fp4_ext.fp4_dequantize(input)
+        return dequantized.view_as(input)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        return grad_output
+```
 
 <NextSteps links={[
   { href: '/access/terminal/', label: 'Use terminal access safely' },
