@@ -1,0 +1,47 @@
+---
+title: Layer and function settings for optimal GPU kernel scheduling
+description: Configure settings, and understand consequences for GPU kernel scheduling
+audience: Researchers
+maturity: Verified
+lastVerified: 2026-07-21
+products: [Run:ai]
+sourceRefs: [runai_guide, SSH-container, GPU-direct-storage]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
+
+Please note that the following kernel settings have been retrieved from the Surf tutorial on [best performance settings](https://servicedesk.surf.nl/wiki/spaces/WIKI/pages/30668820/Deep+Learning+on+A100+GPUs).
+Sizes used in layer settings should be multiples of 8 whenever possible, e.g.:
+
+* Batch size
+* Channel size
+* Vocabulary size
+* Sequence length
+* In/Output size of linear (fully-connected) layers
+
+Convert your model and batched data to 'channels last' i.e. NHWC (2D) or NDHWC (3D) data format.
+This requires a few extra lines of code in PyTorch (be mindful of the in-/out-of-place nature of .to() !):
+
+```
+model.to(memory_format=torch.channels_last)
+batch = batch.to(memory_format=torch.channels_last)
+```
+
+When using convolution layers:
+
+* Make sure the size of your channel dim equals 0 mod 8 whenever possible
+* Make sure the size of your channel dim is larger or equal to 32 whenever possible
+
+When using the grouped setting inside the convolution layer:
+
+* Make sure the size of your input channel dim is equal to the size of your output channel dim
+* Make sure the size of your input channel dim equals of one of the following: {1,4,8,16,32,64,128,256}
+
+<NextSteps links={[
+  { href: '/access/terminal/', label: 'Use terminal access safely' },
+  { href: '/workloads/training/', label: 'Attach storage to a workload' },
+]} />
