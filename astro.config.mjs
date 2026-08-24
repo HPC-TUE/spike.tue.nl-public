@@ -27,6 +27,7 @@ export default defineConfig({
           items: [
             { slug: 'start-here' },
             { slug: 'start-here/intake' },
+            { slug: 'start-here/data-classification' },
             { slug: 'start-here/essential-practices' },
           ],
         },

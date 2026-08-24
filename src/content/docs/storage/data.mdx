@@ -26,10 +26,10 @@ whether your data survives a restart, retry, or deletion.
 A TU/e-managed network share, including a NetApp-backed share, is an existing
 data source rather than Spike project storage. Do not assume that a share can be
 mounted directly into a workload. Before onboarding or a large transfer, give
-SCC the share owner, protocol, approximate size, data classification, source
-path, and required access period. SCC will confirm whether the approved route
-is a direct managed connection or a staged transfer through S3 or an
-SSH-accessible workspace.
+SCC the share owner, protocol, approximate size, [data-classification
+decision](/start-here/data-classification/), source path, and required access
+period. SCC will confirm whether the approved route is a direct managed
+connection or a staged transfer through S3 or an SSH-accessible workspace.
 
 Test the chosen route with a small directory before moving the dataset. Confirm
 permissions, destination capacity, file counts, and sample checksums. Never copy
@@ -40,7 +40,8 @@ notebook, workload command, or support ticket.
 
 External cloud storage is not automatically trusted or mounted on Spike. Record
 the provider, region, bucket or share owner, expected transfer volume,
-classification, and any egress implications during intake. Use a project-scoped
+classification decision, and any egress implications during intake. Approval
+must cover both the source and the new Spike copy. Use a project-scoped
 credential through the approved secret mechanism and copy only into approved
 persistent storage. The [file-transfer guide](/storage/file-transfer/) contains
 the supported S3, SSH, and rsync patterns.
@@ -72,6 +73,7 @@ Project provisioning, volume creation, resizing, copying, and deletion are
 admin operations and are intentionally documented only in the private wiki.
 
 <NextSteps links={[
+  { href: '/start-here/data-classification/', label: 'Confirm the data decision' },
   { href: '/storage/file-transfer/', label: 'Choose a data-transfer method' },
   { href: '/workloads/training/', label: 'Attach storage to a workload' },
 ]} />

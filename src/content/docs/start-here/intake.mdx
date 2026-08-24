@@ -36,7 +36,8 @@ conversation. Include:
   meaningful HPC test;
 - The expected number and type of GPUs, run duration, and rough project window;
 - The estimated dataset size, its current location, whether it is ready to
-  transfer, and its expected sensitivity classification;
+  transfer, and the outcome from [Data classification on
+  Spike](/start-here/data-classification/);
 - The software stack and whether a working container already exists;
 - Why Spike may be a better fit than the resources you already use.
 
@@ -134,9 +135,12 @@ maintenance window and a year-end window for required updates. Exact dates,
 scope, and expected downtime are announced to active projects in advance; plan
 checkpoints and data transfers around the communicated window.
 
-Do not bring non-anonymized or non-pseudonymized personal data, direct end-user
-data processing, or data above the permitted sensitivity level to Spike. Confirm
-the classification and handling plan with your data steward before onboarding.
+Directly identifiable personal data, unreviewed special-category personal data,
+and direct participant or end-user processing do not enter through normal Spike
+onboarding. Pseudonymized data remains personal data and requires an explicit,
+recorded review. Complete [Data classification on
+Spike](/start-here/data-classification/) with your Data Steward and SCC AI
+Engineer before transfer.
 
 ## Support after onboarding
 
@@ -146,6 +150,7 @@ to review resource choices, container and data-flow problems, failed or slow
 runs, and opportunities to use the system more efficiently.
 
 <NextSteps links={[
+  { href: '/start-here/data-classification/', label: 'Classify project data before transfer' },
   { href: '/access/accounts/', label: 'Check project access after onboarding' },
   { href: '/images/podman-harbor/', label: 'Prepare the workload environment' },
   { href: '/storage/data/', label: 'Plan project storage' },

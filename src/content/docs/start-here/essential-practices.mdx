@@ -74,6 +74,11 @@ saved screenshot. Use the approved project secret mechanism. Do not log raw
 prompts, confidential samples, personal data, authorization headers, or full
 credentials.
 
+The same boundary applies to inputs and derived artefacts. Review [Data
+classification on Spike](/start-here/data-classification/) before moving data,
+and reassess it when a workload creates prompts, embeddings, checkpoints,
+weights, predictions, or logs that may expose restricted information.
+
 ## Finish deliberately
 
 Before stopping or deleting a workload:

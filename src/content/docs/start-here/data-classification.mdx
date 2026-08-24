@@ -1,0 +1,136 @@
+---
+title: Data classification on Spike
+description: Decide whether project data is suitable for Spike and obtain approval before transfer.
+audience: Spike applicants, project leads, and researchers
+maturity: Verified
+lastVerified: 2026-08-24
+products: [Spike, ExaFS, S3DS]
+requiresVpn: false
+sourceRefs: [spike-public-fit, tue-rdm-handbook]
+sensitivity: public
+---
+
+import NextSteps from '../../../components/NextSteps.astro';
+
+Classify the complete data flow before copying even a sample to Spike. The
+intake decision covers the stated dataset, users, storage, transfer route,
+processing, outputs, and retention period. A decision for one dataset does not
+automatically approve a later dataset or a new way of using it.
+
+This page is a Spike admission guide, not a replacement for the TU/e Research
+Data Management Framework Policy, a Data Management Plan, ethical review, a
+data agreement, or privacy assessment. When the classification or approval is
+unclear, the data is **not yet approved for Spike**. Keep it at its current
+approved location and contact your Data Steward and SCC AI Engineer.
+
+## Start with the data, not its filename
+
+Answer these questions for the source data and for the information produced by
+the workload:
+
+1. Does it relate to an identified or identifiable person, directly or when
+   combined with other information?
+2. Is it anonymized, pseudonymized, directly identifiable, or special-category
+   personal data? Removing names alone does not necessarily anonymize data.
+3. Is access restricted by an agreement, licence, embargo, intellectual-property
+   obligation, export condition, or collaborator requirement?
+4. Where will it enter Spike, who needs access, which external services can see
+   it, where will results go, and when must each copy be removed?
+5. Could prompts, logs, embeddings, model weights, checkpoints, predictions, or
+   visualizations reveal source records or other restricted information?
+
+Use the most restrictive applicable answer. A public input does not make every
+derived output public, and joining two low-risk datasets can create a more
+identifiable or restricted dataset.
+
+## Spike intake outcomes
+
+The descriptions below are operational outcomes for Spike. They are not new
+TU/e classification labels.
+
+| Dataset situation | Spike outcome | What must be established before transfer |
+| --- | --- | --- |
+| Open or published non-personal data | **Normal intake** | Owner or source, licence, integrity/version, expected size, and retention period |
+| Restricted or confidential non-personal research data | **Documented approval** | Data owner, access list, contractual or licence restrictions, approved transfer and storage, and permitted outputs |
+| Anonymized research data | **Documented approval** | How anonymization was performed, residual re-identification risk, source owner, and confirmation that no key or reasonably available information can restore identity |
+| Pseudonymized personal data | **Stop and review** | A Data Steward decision, applicable ethical/privacy approvals, purpose and legal basis, key custody outside the dataset, named users, and SCC confirmation that the required controls are available |
+| Directly identifiable personal data, unreviewed special-category personal data, or direct participant/end-user processing | **Do not transfer through normal onboarding** | Ask the Data Steward and SCC to identify an approved platform and workflow. Do not use Spike unless a specific, documented decision authorizes the complete data flow |
+| Passwords, API keys, private keys, tokens, or a pseudonymization key | **Never upload as project data** | Use the approved secret mechanism. Keep a pseudonymization key in a different approved location from the dataset |
+
+Pseudonymized data remains personal data. Anonymization must be effective for
+the actual data and context; calling a dataset "anonymous" is not evidence.
+
+## Evidence to bring to intake
+
+Give SCC enough information to verify the decision without placing sensitive
+content in email, Jira, chat, or a support ticket:
+
+- a plain-language description of the data and research purpose;
+- the data owner, project lead, and Data Steward contact;
+- whether the data is non-personal, anonymized, pseudonymized, directly
+  identifiable, or special-category personal data;
+- the approval or decision reference for the DMP, ethical review, privacy
+  assessment, data agreement, and any owner restrictions that apply;
+- the current location, expected size, source organization, transfer route,
+  Spike destination, and intended output destination;
+- the complete named user list, external collaborators, and required access
+  period;
+- the anonymization or pseudonymization method and, where applicable, who holds
+  the key and where it is kept;
+- approved external services, model endpoints, experiment trackers, cloud
+  storage, or other systems that could receive data or derived information; and
+- the retention, archival, and deletion plan for inputs, intermediate files,
+  checkpoints, models, logs, and results.
+
+Link to approvals held in their authoritative restricted system. Do not attach
+raw participant data, secrets, pseudonymization keys, or unnecessary sensitive
+details to the intake record.
+
+## Rules after approval
+
+An approved classification becomes part of the project boundary:
+
+- use only the approved project storage, datasource, transfer route, and named
+  users;
+- keep a pseudonymization key separate from the dataset and from ordinary
+  workload access;
+- do not place sensitive values in container images, Git repositories,
+  commands, environment dumps, logs, screenshots, notebooks, or support cases;
+- treat prompts, extracts, embeddings, checkpoints, model weights, predictions,
+  and logs as at least as restricted as their source until the owner or Data
+  Steward confirms otherwise;
+- do not send data or derived information to an external cloud service,
+  experiment tracker, model endpoint, or collaborator unless that flow is part
+  of the approval; and
+- verify the destination and a small non-sensitive test before starting the
+  real transfer.
+
+Request a new review before adding a dataset, linking datasets, changing the
+purpose, adding users, enabling external egress, hosting a model, exporting
+results, or changing retention. Stop work and contact SCC immediately if data
+arrives outside the approved boundary or is exposed to the wrong user or
+service.
+
+## TU/e research-data requirements
+
+Research involving human participants or personal data must follow the current
+TU/e ethical-review process. A high-risk personal-data activity may also require
+a pre-DPIA or DPIA. Sharing or receiving personal or IP-protected data with an
+external party may require a data agreement.
+
+Use the current institutional guidance rather than copying policy details into
+a project note:
+
+- [TU/e RDM Framework Policy](https://rdm.tue.nl/docs/intro/tue-policy/)
+- [Ethical approval](https://rdm.tue.nl/docs/before-research/ethical-approval/)
+- [Privacy and Data Protection Impact Assessment](https://rdm.tue.nl/docs/privacy/privacy-impact-assessment/)
+- [Data storage and sharing](https://rdm.tue.nl/docs/during-research/storage-and-sharing/)
+- [Contact a TU/e Data Steward](https://rdm.tue.nl/docs/contact/)
+
+<NextSteps links={[
+  { href: '/start-here/intake/', label: 'Prepare the Spike intake request' },
+  { href: '/storage/data/', label: 'Choose approved project storage' },
+  { href: '/storage/file-transfer/', label: 'Plan the transfer route' },
+  { href: '/start-here/essential-practices/', label: 'Apply the essential practices' },
+  { href: '/support/', label: 'Contact Spike support' },
+]} />
