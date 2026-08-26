@@ -9,12 +9,12 @@ sourceRefs: [runai_guide, SSH-container, GPU-direct-storage]
 sensitivity: public
 ---
 
-import DocMeta from '../../../components/DocMeta.astro';
-import NextSteps from '../../../components/NextSteps.astro';
-import StandardConfig from '../../../assets/distribution/select_standard.png';
-import MultiGpuConfig from '../../../assets/distribution/select_multiple_gpus.png';
-import DistConfig from '../../../assets/distribution/select_distributed.png';
-import MultiGpuElasticConfig from '../../../assets/distribution/select_multiple_gpus_elastically.png';
+import DocMeta from '../../../../../components/DocMeta.astro';
+import NextSteps from '../../../../../components/NextSteps.astro';
+import StandardConfig from '../../../../../assets/distribution/select_standard.png';
+import MultiGpuConfig from '../../../../../assets/distribution/select_multiple_gpus.png';
+import DistConfig from '../../../../../assets/distribution/select_distributed.png';
+import MultiGpuElasticConfig from '../../../../../assets/distribution/select_multiple_gpus_elastically.png';
 
 <DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
 
@@ -662,7 +662,7 @@ In response to the clunkiness and the desire to further allow scaling according 
 
 FSDP works with help of a sharding factor F.
 When F = 1, FSDP acts in a normal distributed data parallel way (see the subsection on Data parallel distribution) by limiting distribution to single GPU neural network replica groups.
-When 1 < F <= n_gpus, a device mesh according to the factor is enabled whereby arbitrary sharding is applied in a particular inner mesh group.
+When `1 < F <= n_gpus`, a device mesh according to the factor is enabled whereby arbitrary sharding is applied in a particular inner mesh group.
 Arbitrary sharding involves proportional distribution of for example rows and or columns for all layers along GPUs in the inner mesh group.
 For the sake of simplicity, we consider loss and gradient distribution outside the scope of this discussion.
 Prior to applying a forward or backward pass, gather-scatter communication operations are performed for the row-wise and or column-wise parallel matrix multiplication calculations.
@@ -888,7 +888,7 @@ runai training submit a-test-workload -i harbor.spike.tue.nl/aiteam/pretrainingc
 So far in all aforementioned examples we have been using the ***torch.multiprocessing.spawn*** method for spinning up multiple processes locally.
 Each process is asked to execute the implemented worker method with provided arguments.
 Unfortunately, ***torch.multiprocessing.spawn*** does not scale beyond the confines of a single DGX B200 node.
-Therefore, ***torch.multiprocessing.spawn*** is only suitable for distributed training and evaluation processes which require access to <= 8 GPUs.
+Therefore, ***torch.multiprocessing.spawn*** is only suitable for distributed training and evaluation processes which require access to at most eight GPUs.
 To account for message passing alongside both local and inter-node processes, PyTorch includes the ***torch.distributed.run*** console script.
 This console script can in turn be given a worker training and evaluation script (it should therefore ONLY include the functionality of the worker function in previous examples) which you can configure yourself.
 
@@ -897,7 +897,7 @@ Additionally, when settings are not provided by the user as script arguments, th
 These environment variables are injected automatically into the pod container by the GPU Operator stack when configuring distributed training in the Run:ai interface.
 Another interesting observation is that during worker launch, a [health check server](https://github.com/pytorch/pytorch/blob/main/torch/distributed/launcher/api.py#L314) is setup. 
 This health server accounts for a potentially long [rendezvous](https://docs.pytorch.org/docs/2.13/elastic/rendezvous.html) procedure before a network information key-value store is ready by making sure network ports are healthy.
-Therefore, if you are considering distributed training with a total amount of GPUs <= 8, to circumvent initial long experiment initialization time, we recommend distributed launching with ***torch.multiprocessing.spawn***.
+Therefore, if you are considering distributed training with at most eight GPUs, to circumvent initial long experiment initialization time, we recommend distributed launching with ***torch.multiprocessing.spawn***.
 
 Even though rendezvous introduces additional experiment time for both initialization and information synchronization, it opens up the door to some interesting new distribution procedures.
 Recall from the sections Data parallel and Fully sharded data parallel that each GPU (or GPU mesh group) uses a graph replica for processing of an additional batch size tensors.
