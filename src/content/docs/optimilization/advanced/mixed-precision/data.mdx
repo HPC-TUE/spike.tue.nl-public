@@ -1,0 +1,237 @@
+---
+title: Faster training and less vRAM usage with mixed-precision for advanced users
+description: Configure mixed-precision, and understand configuration consequences, in the context of model performance, memory bounds, and/or compute bounds
+audience: Researchers
+maturity: Verified
+lastVerified: 2026-07-21
+products: [Run:ai]
+sourceRefs: [runai_guide, SSH-container, GPU-direct-storage]
+sensitivity: public
+---
+
+import DocMeta from '../../../components/DocMeta.astro';
+import NextSteps from '../../../components/NextSteps.astro';
+
+<DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
+
+Over the last years, machine learning model pipeline size, due to rapid parameter expansion, has been expanding at a large growth rate.
+This rate is typically facilitated by a less stringent inductive bias present in attention-based mechanisms.
+Together with increasing dataset sizes, the less stringent inductive bias allows model pipelines to generalize better to a task it needs to perform.
+This shifts the scaling ceiling from parameter fit in the context of dataset size and task to the speed at which parameters can be trained effectively.
+The speed is controlled by a set of factors including, but not limited to, 1) available vRAM, 2) accelerator ratio, and 3) peak T(FL)OPS accelerators can provide at a particular timestamp.
+These factors, including how processing of parameters and tensor operations at different levels of precision influences these factors, take main stage in this knowledge article.
+For the examples in the following subsections, we assume you are familiar with the simple model training example in PLACEHOLDER: OPTIMILIZATION/BEGINNER/SYNCHRONIZATION.
+In the example, a dataset/dataloader is responsible for copying MNIST dataset batches to RAM, the Module object and batches are synchronized onto a device by means of the ***Module.to(device)*** and ***Tensor.to(device)*** methods, and module parameters are trained.
+
+## Configuration of different graph operators at varying precisions
+
+Historically, machine learning model pipeline parameter training was exclusively performed with the 32-bit floating-point datatype.
+The choice for this datatype is controlled by the resolution range that this data type provides, and how well it connects to the typical resolution range a parameter optimization process converges at.
+Additionally, the chosen resolution should not cause gradients to vanish beyond the resolution range, resulting in gradients clipped at 0.
+One of the earliest accounts of altering the precision of graph operators involves [training at 16-bit floating-point precision](https://arxiv.org/abs/1710.03740), loss scaling, and updating a master copy of parameters at 32-bit floating-point precision.
+This reduces computational complexity because the peak T(FL)OPS at which operations involved in particular layers are processed at increases from FP32 to FP16 TFLOPS.
+Additionally, vRAM storage requirements for local layer weights and intermediate layer representations is effectively halved.
+This storage requirement is slightly negatively influenced by the requirement for storing a master weight copy at FP32 datatype level.
+Training at 16-bit floating-point precision can be configured in PyTorch with help of the ***torch.amp*** package.
+The supported PyTorch operations are covered [here](https://docs.pytorch.org/docs/2.13/amp.html#cuda-ops-that-can-autocast-to-float16) and include: gemm, convolution, and recurrent cells (including lstm, gru).
+The following example illustrates how ***torch.amp*** can be configured in the ***train()*** method from the earlier referenced example to force lower precision for every supported operation:
+
+```
+import torch
+
+...
+
+def train(args, model, device, train_loader, optimizer, epoch, scaler):
+    model.train()
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)
+		
+		with torch.cuda.amp.autocast(enabled=True):
+			output = model(data)
+			loss = F.nll_loss(output, target)
+        
+		# Scaler: instance of torch.cuda.amp.GradScaler(enabled=True)
+		scaler.scale(loss).backward()
+		scaler.step(optimizer)
+		scaler.update()
+		optimizer.zero_grad()
+        
+        if batch_idx % args.log_interval == 0:
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                epoch, batch_idx * len(data), len(train_loader.dataset),
+                100. * batch_idx / len(train_loader), loss.item()))
+            if args.dry_run:
+                break
+...
+```
+
+In the meantime, newer forms of mixed-precision training have been introduced which lower the layer's considered datatype to 8-bit or 4-bit floating-point.
+Please note that the Blackwell GPU architecture (which the B200 GPUs belong to) is the only architecture which currently supports 4-bit floating-point precision at hardware level.
+If you try to configure 4-bit floating-point precision at a GPU which is part of the Hopper architecture line, you are likely emulating it in the least significant bit portion at 8-bit floating-point precision.
+The smaller floating-point datatypes are expected to enable training of existentially large language models (in the parameter range of 150B - 3T parameters).
+Different from 16-bit mixed-precision training is that the narrower dynamic range in 8-bit or 4-bit floating-point results in a higher likelihood of encountering value overflows.
+The likelihood of encountering value overflow can further be reduced by utilization of a per-tensor scaling factor rather than a loss scaling factor and scaling factor tuning.
+Scaling factor tuning should result in factors such that the maximum magnitude in the tensor becomes close to the maximum representable magnitude in the corresponding format.
+Training with [8-bit floating-point mixed-precision](https://arxiv.org/abs/2209.05433) in PyTorch is currently [only supported](https://docs.pytorch.org/ao/stable/workflows/training.html#quantized-training) for the ***nn.Linear*** module and ***torch.grouped_mm*** op.
+It can be configured with help of the ***TorchAO*** Python package.
+Training with [4-bit floating-point mixed-precision](https://arxiv.org/abs/2509.25149) can be configured with help of the Nvidia ***TransformerEngine*** package.
+An example of a gemm op recipe (extensively used in the QKV calculation in the self-attention layer) can be found [here](https://github.com/NVIDIA/TransformerEngine/blob/main/tests/pytorch/nvfp4/test_nvfp4_gemm_exact.py).
+PyTorch can be configured as a computation backend when using the ***TransformerEngine*** package.
+The following example illustrates how ***float8*** mixed-precision training can be configured in PyTorch with the ***TorchAO*** package:
+
+```
+import argparse
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from torchvision import datasets, transforms
+from torch.optim.lr_scheduler import StepLR
+from torchao.float8 import Float8LinearConfig, convert_to_float8_training
+
+
+class Net(nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+        self.conv1 = nn.Conv2d(1, 32, 3, 1)
+        self.conv2 = nn.Conv2d(32, 64, 3, 1)
+        self.dropout1 = nn.Dropout(0.25)
+        self.dropout2 = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(9216, 128)
+        self.fc2 = nn.Linear(128, 10)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, 2)
+        x = self.dropout1(x)
+        x = torch.flatten(x, 1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.dropout2(x)
+        x = self.fc2(x)
+        output = F.log_softmax(x, dim=1)
+        return output
+
+
+...
+
+
+# Filter modules from being eligible for float8 conversion
+# The fqn filter can be used to skip later layers in the architecture
+# Later layers are generally much more sensitive to small changes close to the bounds of the dynamic precision range
+def module_filter_fn(mod: torch.nn.Module, fqn: str):
+    if fqn == "1":
+        return False
+
+    # don't convert linear modules with weight dimensions not divisible by 16
+    if isinstance(mod, torch.nn.Linear):
+        if mod.in_features % 16 != 0 or mod.out_features % 16 != 0:
+            return False
+    
+	return True
+
+
+def main():
+    # Training settings
+    parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
+    parser.add_argument('--batch-size', type=int, default=64, metavar='N',
+                        help='input batch size for training (default: 64)')
+    parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
+                        help='input batch size for testing (default: 1000)')
+    parser.add_argument('--epochs', type=int, default=14, metavar='N',
+                        help='number of epochs to train (default: 14)')
+    parser.add_argument('--lr', type=float, default=1.0, metavar='LR',
+                        help='learning rate (default: 1.0)')
+    parser.add_argument('--gamma', type=float, default=0.7, metavar='M',
+                        help='Learning rate step gamma (default: 0.7)')
+    parser.add_argument('--no-cuda', action='store_true', default=False,
+                        help='disables CUDA training')
+    parser.add_argument('--no-mps', action='store_true', default=False,
+                        help='disables macOS GPU training')
+    parser.add_argument('--dry-run', action='store_true', default=False,
+                        help='quickly check a single pass')
+    parser.add_argument('--seed', type=int, default=1, metavar='S',
+                        help='random seed (default: 1)')
+    parser.add_argument('--log-interval', type=int, default=10, metavar='N',
+                        help='how many batches to wait before logging training status')
+    parser.add_argument('--save-model', action='store_true', default=False,
+                        help='For Saving the current Model')
+    args = parser.parse_args()
+    use_cuda = not args.no_cuda and torch.cuda.is_available()
+    use_mps = not args.no_mps and torch.backends.mps.is_available()
+
+    torch.manual_seed(args.seed)
+
+    if use_cuda:
+        device = torch.device("cuda")
+    elif use_mps:
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+
+	...
+
+    model = Net().bfloat16().to(device)
+    optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
+	
+	# valid recipe names: "tensorwise", "rowwise", "rowwise_with_gw_hp"
+	# These recipe names control the granularity at which a scaling factor is applied
+	config = Float8LinearConfig.from_recipe_name("tensorwise")
+
+	# convert specified `torch.nn.Linear` modules to `Float8Linear`
+	convert_to_float8_training(model, config=config, module_filter_fn=module_filter_fn)
+
+    scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
+    for epoch in range(1, args.epochs + 1):
+        train(args, model, device, train_loader, optimizer, epoch)
+        test(model, device, test_loader)
+        scheduler.step()
+
+    if args.save_model:
+        torch.save(model.state_dict(), "mnist_cnn.pt")
+
+
+if __name__ == '__main__':
+    main()
+```
+
+## 64-bit floating-point emulation in dgemm and zgemm kernels
+
+Utilizing 4-bit floating-point precision at different linear graph operators in a transformer-style machine learning pipeline is becoming more and more popular.
+This has lead to drastic changes in the accelerator ratios Nvidia incorporates in new hardware architectures.
+The support for the high-precision 64-bit floating-point accelerator is gradually being phased out.
+This is illustrated by the recent change in the [ratio](https://doi.org/10.1177/10943420241313064) of supported 64-bit and 32-bit floating-point tensor core accelerators between the Hopper and Blackwell architectures: 7.4 vs. 27.5.
+The ratio is expected to increase in future Nvidia hardware architectures leading to significant 64-bit floating-point accelerator contention when kernels are executed on a GPU.
+This is problematic for traditional high-performance simulation applications or physics-based calculations involved in the machine learning pipeline which rely on 64-bit floating-point precision.
+The need for this precision stems from correct representation of high-resolution constants (e.g. speed of light) or involved operations which are sensitive to small floating-point changes.
+
+In response, alongside the 64-bit floating-point accelerator gradually being phased out, Nvidia has increased the effort in providing better support for 64-bit floating-point emulation.
+The idea of emulation is that with appropriate exponent alignment and mantissa split operations, the gemm operations can be [offloaded](https://doi.org/10.1177/10943420241239588) to 8-bit integer accelerators.
+After the gemm operation has been performed, the 64-bit floating-point accelerator is only used for a sum reduction operation back into 64-bit floating-point resolution.
+A sum reduction operation generally involves much less FLOPS in comparison to a gemm operation and the large count of 8-bit integer accelerators on the B200 GPU makes time complexity as a result of accelerator contention of the gemm TOPS negligible.
+
+Support for 64-bit floating-point emulation has been added since cuBLAS 13.0.2 for the [dense gemm operators](https://github.com/NVIDIA/CUDALibrarySamples/tree/master/cuBLAS/Emulation) dgemm (64-bit float) and zgemm (128-bit complex).
+Support for batched gemm, sparse gemm, and [triangular solving](https://github.com/RIKEN-RCCS/GEMMul8), and better acceleration support for [large matrix sizes](https://doi.org/10.1177/10943420261467787) is expected to arrive in the near future.
+In what follows, we show how cuBLAS can be [configured](https://docs.nvidia.com/cuda/cublas/index.html#floating-point-emulation) to utilize 64-bit floating-point emulation by means of environment variables in a bash shell:
+
+```
+# Setup emulation and logging variables
+# Logging: https://docs.nvidia.com/cuda/archive/11.1.0/cublas/index.html#cublasLoggerConfigure
+# Emulation configuration: https://docs.nvidia.com/cuda/cublas/index.html#floating-point-emulation
+
+export CUBLAS_LOGINFO_DBG=1
+export CUBLAS_LOGDEST_DBG=stdout
+export CUBLAS_EMULATION_STRATEGY=eager
+export CUBLAS_EMULATE_DOUBLE_PRECISION=1
+export CUBLAS_FIXEDPOINT_EMULATION_MANTISSA_BIT_COUNT=79 # Allows up to 10 slices
+
+python3 train.py
+```
+
+<NextSteps links={[
+  { href: '/access/terminal/', label: 'Use terminal access safely' },
+  { href: '/workloads/training/', label: 'Attach storage to a workload' },
+]} />
