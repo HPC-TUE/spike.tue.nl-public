@@ -1,0 +1,133 @@
+---
+title: LLM hosting service
+description: Access the current SCC-managed LLM gateway and its hosted models on Spike.
+audience: Researchers
+maturity: Experimental
+lastVerified: 2026-08-28
+products: [Run:ai, vLLM]
+requiresVpn: true
+sourceRefs: [inferencing, hosted-models, spike-hosting]
+sensitivity: public
+---
+
+import NextSteps from '../../../components/NextSteps.astro';
+
+The current Spike LLM hosting service exposes SCC-managed models through one
+OpenAI-compatible gateway. Researchers call the models from code or an approved
+client; SCC AI Engineers operate the underlying Run:ai and vLLM deployments.
+You must not create, resize, restart, reconfigure, or delete those workloads.
+
+The gateway is available on the TU/e network or VPN at:
+
+```text
+https://spike-gateway-runai-aiteam.inference.spike.tue.nl/v1
+```
+
+## Current service information
+
+To use the service, connect to TU/e VPN and request a personal API key from your
+SCC AI Engineer or `h.zhang@tue.nl`. The key gives access to the shared gateway;
+it does not grant permission to process data that has not been approved for the
+project.
+
+Use the [Spike hosting project in TU/e
+GitLab](https://gitlab.tue.nl/hpclab/llm-hosting/spike-hosting) for the live
+model catalogue, availability, examples, and changelog. TU/e GitLab may ask you
+to sign in. Model revisions, request limits, and availability can change, so do
+not copy a model identifier from another project or an old example.
+
+Use this page for safe client guidance and the GitLab project for live service
+information. If they appear to disagree, stop and ask your SCC AI Engineer
+before sending data or building a dependency on an endpoint.
+
+## Before sending a request
+
+Confirm:
+
+1. The model is approved for the intended research purpose.
+2. The input and output data are allowed to be processed by this service.
+3. The endpoint, authentication method, and request limits came from the SCC
+   onboarding or support channel.
+4. The client will not log tokens, sensitive prompts, or model responses.
+5. A small harmless request succeeds before starting a batch or benchmark.
+
+:::caution
+An access token is a secret. Keep it out of notebooks, repositories, images,
+tickets, screenshots, and shared terminal history. Use the approved credential
+mechanism and rotate a token that may have been exposed.
+:::
+
+## Discover available model identifiers
+
+For an OpenAI-compatible endpoint, keep the issued values in local environment
+variables:
+
+```bash
+export HOSTED_MODEL_BASE_URL='https://spike-gateway-runai-aiteam.inference.spike.tue.nl/v1'
+export HOSTED_MODEL_TOKEN='your-personal-api-key'
+```
+
+List the models currently exposed by that endpoint:
+
+```bash
+curl --fail --silent \
+  -H "Authorization: Bearer ${HOSTED_MODEL_TOKEN}" \
+  "${HOSTED_MODEL_BASE_URL}/models"
+```
+
+Use only an identifier returned by discovery and approved for the project. For
+a general request, `best-live` asks the gateway to select a model that is
+already running; specify an exact model only when the research requires it.
+
+## Send a small request
+
+```bash
+curl --fail --silent \
+  -H "Authorization: Bearer ${HOSTED_MODEL_TOKEN}" \
+  -H 'Content-Type: application/json' \
+  "${HOSTED_MODEL_BASE_URL}/chat/completions" \
+  -d '{
+    "model": "best-live",
+    "messages": [
+      {"role": "user", "content": "Return the word ready."}
+    ]
+  }'
+```
+
+Set an application timeout and handle rate limits and service errors. Do not
+retry indefinitely. Large batches and load tests require prior coordination
+with the SCC AI Engineer managing the endpoint.
+
+The backend uses [vLLM's OpenAI-compatible
+server](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html),
+but the SCC-provided endpoint and policy remain authoritative. Compatible
+clients can be configured with the gateway URL and personal API key; keep the
+key in the client's secret store rather than its exported configuration.
+
+## Shared-service behaviour
+
+Inactive models can be moved out of GPU memory. A first request may therefore
+need warm-up time, and a busy or unavailable model can return HTTP `502` or
+`504`. Retry only a small number of times with a delay, or use `best-live`; do
+not create an unbounded retry loop. Coordinate large batches, benchmarks, and
+load tests with the SCC AI Engineer managing the service.
+
+The gateway returns token counts in the response `usage` field. You can review
+your request and token totals in the [personal usage
+dashboard](https://spike-gateway-runai-aiteam.inference.spike.tue.nl/login)
+using your API key. The current service records usage metadata rather than
+prompt and completion content, but this does not relax the project's data
+classification or approval requirements.
+
+## What to report when requesting help
+
+Share the time of the request, the endpoint hostname, model identifier, HTTP
+status, and a redacted error message. Do not include the bearer token or
+sensitive prompt content. SCC AI Engineers can inspect and change the
+deployment; researchers should not attempt to repair it through Run:ai.
+
+<NextSteps links={[
+  { href: '/workloads/inference/', label: 'Understand inference ownership' },
+  { href: '/advanced/benchmarks/', label: 'Plan an approved endpoint benchmark' },
+  { href: '/support/', label: 'Request access or report a problem' },
+]} />

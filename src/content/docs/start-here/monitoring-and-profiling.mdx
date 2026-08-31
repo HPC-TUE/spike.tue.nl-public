@@ -1,0 +1,132 @@
+---
+title: Monitor and profile a first workload
+description: Check that a GPU workload is healthy, locate bottlenecks, and collect evidence before scaling.
+audience: New Spike users
+maturity: Verified
+lastVerified: 2026-08-28
+products: [Run:ai, NVIDIA GPU, PyTorch]
+sourceRefs: [runai_guide, torch-example, runai-tools]
+sensitivity: public
+---
+
+import NextSteps from '../../../components/NextSteps.astro';
+
+Monitoring tells you what the workload is doing while it runs. Profiling
+explains where a representative part of the program spends its time. Use both
+on a small one-GPU run before requesting more GPUs: scaling an unknown
+bottleneck usually increases cost without fixing it.
+
+## Establish a useful baseline
+
+Use the same code revision, container image, dataset subset, configuration, and
+random seed for every comparison. Choose a short run that includes normal data
+loading, forward and backward computation, optimizer work, and at least one
+checkpoint if checkpointing is part of the real workload.
+
+Record at minimum:
+
+- workload name, image tag, code and dataset revision;
+- GPU type and count, CPU and memory request, and batch size;
+- start time, step or batch time, throughput, and peak GPU memory;
+- loss or another correctness signal; and
+- checkpoint duration and the persistent result location.
+
+Save application metrics and logs on the project data source or PVC. The Run:ai
+log view is useful for diagnosis, but it is not permanent experiment storage.
+
+## Monitor the running workload
+
+1. In Run:ai, confirm that the workload reaches **Running** and uses the intended
+   project, image, compute resource, and data source.
+2. Follow the application logs. Check that steps advance, loss and throughput
+   remain plausible, and checkpoints appear where expected.
+3. [Connect to the running workload](/access/terminal/) and inspect the GPU:
+
+```bash
+nvidia-smi
+nvidia-smi \
+  --query-gpu=timestamp,index,utilization.gpu,memory.used,memory.total,power.draw \
+  --format=csv -l 5
+```
+
+Stop the repeating query with <kbd>Ctrl</kbd>+<kbd>C</kbd>. Observe several
+normal steps rather than one instant. No single utilization percentage proves
+that a workload is efficient; correlate GPU behaviour with step time,
+application logs, CPU work, data loading, evaluation, and checkpoints.
+
+These patterns indicate where to investigate next:
+
+| Observation | First checks |
+| --- | --- |
+| Workload remains `Pending` | project, requested resources, quota, image, and attached data sources; this is a scheduling issue, not a profiling result |
+| GPU utilization is repeatedly low while steps continue slowly | data loading, CPU preprocessing, storage reads, and CPU/GPU synchronization |
+| GPU memory is near its limit or the process reports out-of-memory | batch size, tensor and activation lifetime, precision, and unexpected retained objects |
+| Utilization drops at regular intervals | evaluation, checkpoint writes, logging, data-loader restarts, or synchronization points |
+| Several GPUs behave differently | per-rank data, distributed synchronization, worker failure, or imbalanced work |
+
+Use the beginner optimization guides for [data
+loading](/optimilization/beginner/loading/data/), [CPU/GPU
+synchronization](/optimilization/beginner/synchronization/data/), [tensor
+contractions](/optimilization/beginner/contraction/data/), and [workload
+fractioning](/optimilization/beginner/fractioning/data/) once the observation
+points to one of those areas.
+
+## Profile a short representative window
+
+Do not profile an entire long training run. Profilers add overhead and can
+produce large traces. Warm up first, capture only a few representative steps,
+write the trace to persistent project storage, and compare one change at a
+time.
+
+For a PyTorch workload, add a bounded profiler around the normal training-step
+function. Replace the trace path and `run_one_training_step()` with values from
+your application:
+
+```python
+from pathlib import Path
+import torch
+
+trace_dir = Path("/path/on/project-pvc/profiler-baseline")
+trace_dir.mkdir(parents=True, exist_ok=True)
+
+with torch.profiler.profile(
+    activities=[
+        torch.profiler.ProfilerActivity.CPU,
+        torch.profiler.ProfilerActivity.CUDA,
+    ],
+    schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
+    on_trace_ready=torch.profiler.tensorboard_trace_handler(str(trace_dir)),
+    record_shapes=True,
+    profile_memory=True,
+) as profiler:
+    for step in range(5):
+        run_one_training_step()
+        profiler.step()
+```
+
+Inspect the trace for the operations with the largest total CPU or CUDA time,
+unexpected synchronization, long data gaps, and memory peaks. First verify that
+the profiled result is still correct; a faster run with different numerical
+behaviour is not a valid optimization.
+
+:::caution
+Profiler traces and logs can expose file paths, model structure, tensor shapes,
+user identifiers, or research metadata. Keep them in approved project storage,
+do not include secrets or raw sensitive samples, and redact them before sharing
+with support.
+:::
+
+## Ask for help with evidence
+
+When a workload is slow or unstable, provide the workload name and time window,
+image and code revision, requested resources, a short redacted log excerpt, the
+monitoring observation, and the smallest reproducing configuration. Include a
+profiler trace only through an approved route and only when SCC asks for it.
+
+<NextSteps links={[
+  { href: '/workloads/training/', label: 'Run a training workload' },
+  { href: '/advanced/experiment-tracking/', label: 'Track experiments and metrics' },
+  { href: '/advanced/benchmarks/', label: 'Compare performance reproducibly' },
+  { href: '/troubleshooting/', label: 'Diagnose a failed or pending workload' },
+  { href: '/support/', label: 'Request help from SCC' },
+]} />

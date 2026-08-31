@@ -3,7 +3,7 @@ title: Essential practices
 description: Protect data, make work reproducible, and use shared GPU capacity responsibly.
 audience: All Spike users
 maturity: Verified
-lastVerified: 2026-08-06
+lastVerified: 2026-08-28
 products: [Run:ai, Harbor, Podman]
 requiresVpn: false
 sourceRefs: [runai_guide, account-setup-guide-harbor-spike, container, runai_tools]
@@ -53,9 +53,11 @@ representative short run before assuming that more GPUs will help. Scaling an
 input bottleneck usually makes the bottleneck more expensive rather than
 faster.
 
-Use [experiment tracking](/advanced/experiment-tracking/) for run identity and
-metrics, and [reproducible benchmarking](/advanced/benchmarks/) for timing and
-profiling.
+Follow [Monitor and profile a first
+workload](/start-here/monitoring-and-profiling/) for the beginner workflow. Use
+[experiment tracking](/advanced/experiment-tracking/) for run identity and
+metrics, and [reproducible benchmarking](/advanced/benchmarks/) for controlled
+comparisons after the baseline works.
 
 ## Respect shared capacity
 
@@ -93,6 +95,7 @@ Before stopping or deleting a workload:
   { href: '/storage/data/', label: 'Choose durable storage' },
   { href: '/images/podman-harbor/', label: 'Build a safe container image' },
   { href: '/workloads/training/', label: 'Run the first training workload' },
+  { href: '/start-here/monitoring-and-profiling/', label: 'Monitor and profile the first run' },
   { href: '/workloads/lifecycle/', label: 'Manage logs, recovery, and cleanup' },
   { href: '/support/', label: 'Contact SCC support' },
 ]} />

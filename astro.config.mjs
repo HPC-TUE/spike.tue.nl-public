@@ -11,6 +11,7 @@ export default defineConfig({
     '/running-jobs/slurm/': '/advanced/slurm-reference/',
     '/storage/filesystems/': '/storage/data/',
     '/software/modules/': '/advanced/',
+    '/advanced/hosted-models/': '/llm-hosting/',
   },
   integrations: [
     starlight({
@@ -29,6 +30,7 @@ export default defineConfig({
             { slug: 'start-here/intake' },
             { slug: 'start-here/data-classification' },
             { slug: 'start-here/essential-practices' },
+            { slug: 'start-here/monitoring-and-profiling' },
           ],
         },
         {
@@ -48,6 +50,10 @@ export default defineConfig({
           items: [{ slug: 'storage/data' }, { slug: 'storage/file-transfer' }],
         },
         {
+          label: 'LLM hosting',
+          items: [{ slug: 'llm-hosting', label: 'Current service and access' }],
+        },
+        {
           label: 'Advanced & experimental',
           items: [
             { slug: 'advanced' },
@@ -56,7 +62,6 @@ export default defineConfig({
             { slug: 'advanced/multi-gpu' },
             { slug: 'advanced/experiment-tracking' },
             { slug: 'advanced/benchmarks' },
-            { slug: 'advanced/hosted-models' },
             { slug: 'advanced/slurm-reference' },
           ],
         },
