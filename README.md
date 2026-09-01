@@ -39,7 +39,7 @@ parent workspace or sibling documentation repository.
 The custom domain is set in `public/CNAME`:
 
 ```text
-spike.tue.nl
+docs.spike.tue.nl
 ```
 
 If the site is deployed to a GitHub Pages project URL instead of a custom domain, update `site` and add `base` in `astro.config.mjs`.

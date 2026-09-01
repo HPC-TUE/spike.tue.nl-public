@@ -15,10 +15,18 @@ fi
 scan_forbidden() {
   local target="$1"
   local label="$2"
-  if rg -n -i --glob '*.md' --glob '*.mdx' --glob '*.html' \
-    '\bdocker\b|docker[[:space:]]+desktop|docker[[:space:]]+compose' "$target"; then
-    printf 'Blocked terminology found in %s. Use the approved Podman workflow.\n' "$label" >&2
-    exit 1
+  if command -v rg >/dev/null 2>&1; then
+    if rg -n -i --glob '*.md' --glob '*.mdx' --glob '*.html' \
+      '\bdocker\b|docker[[:space:]]+desktop|docker[[:space:]]+compose' "$target"; then
+      printf 'Blocked terminology found in %s. Use the approved Podman workflow.\n' "$label" >&2
+      exit 1
+    fi
+  else
+    if grep -r -n -i -E --include='*.md' --include='*.mdx' --include='*.html' \
+      '\bdocker\b|docker[[:space:]]+desktop|docker[[:space:]]+compose' "$target"; then
+      printf 'Blocked terminology found in %s. Use the approved Podman workflow.\n' "$label" >&2
+      exit 1
+    fi
   fi
 }
 

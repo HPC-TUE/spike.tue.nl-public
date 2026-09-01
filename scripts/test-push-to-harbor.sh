@@ -51,3 +51,4 @@ make_mock success
 expect_status 0 env PATH="$work_dir/bin:/usr/bin:/bin" bash "$script" image project 1.0.0 "$containerfile"
 
 printf 'Podman push script tests passed.\n'
+

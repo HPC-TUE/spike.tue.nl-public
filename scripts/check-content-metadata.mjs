@@ -23,7 +23,7 @@ walk(docsRoot);
 const failures = [];
 for (const file of files) {
   const content = fs.readFileSync(file, 'utf8');
-  const frontmatter = content.match(/^---\n([\s\S]*?)\n---/);
+  const frontmatter = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!frontmatter) {
     failures.push(path.relative(site, file) + ': missing frontmatter');
     continue;

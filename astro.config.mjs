@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
 export default defineConfig({
-  site: 'https://spike.tue.nl',
+  site: 'https://docs.spike.tue.nl',
   redirects: {
     '/getting-started/': '/start-here/',
     '/running-jobs/containers/': '/images/podman-harbor/',
