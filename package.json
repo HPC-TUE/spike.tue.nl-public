@@ -23,8 +23,9 @@
     "check:staging-workflow": "node scripts/check-staging-workflow.mjs .",
     "check:ci-workflows": "node scripts/check-local-ci.mjs .",
     "check:external-links": "node scripts/check-external-links.mjs .",
+    "check:secrets": "node scripts/check-secrets.mjs .",
     "test:push-script": "bash scripts/test-push-to-harbor.sh",
-    "verify": "npm run build && npm run check:terminology && npm run check:metadata && npm run check:redirects && npm run check:routes && npm run check:built-links && npm run check:http && npm run check:staging-workflow && npm run check:ci-workflows && npm run check:deployment-boundaries && npm run check:links && npm run check:assets && npm run check:a11y-static && npm run check:design-tokens && npm run check:responsive && npm run test:push-script",
+    "verify": "npm run build && npm run check:terminology && npm run check:metadata && npm run check:redirects && npm run check:routes && npm run check:built-links && npm run check:http && npm run check:staging-workflow && npm run check:ci-workflows && npm run check:deployment-boundaries && npm run check:links && npm run check:assets && npm run check:a11y-static && npm run check:design-tokens && npm run check:responsive && npm run check:secrets && npm run test:push-script",
     "verify:release": "npm run verify && npm run check:external-links"
   },
   "dependencies": {

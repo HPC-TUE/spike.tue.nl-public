@@ -39,7 +39,8 @@ MOCK
 
 expect_status 64 bash "$script"
 expect_status 65 bash "$script" 'bad/name' project 1.0.0 "$containerfile"
-expect_status 69 env PATH="/usr/bin:/bin" bash "$script" image project 1.0.0 "$containerfile"
+mkdir -p "$work_dir/empty"
+expect_status 69 env PATH="$work_dir/empty" "${BASH:-bash}" "$script" image project 1.0.0 "$containerfile"
 
 make_mock login-fail
 expect_status 77 env PATH="$work_dir/bin:/usr/bin:/bin" bash "$script" image project 1.0.0 "$containerfile"
