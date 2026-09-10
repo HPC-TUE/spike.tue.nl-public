@@ -17,22 +17,20 @@ OpenAI-compatible gateway. Researchers call the models from code or an approved
 client; SCC AI Engineers operate the underlying Run:ai and vLLM deployments.
 You must not create, resize, restart, reconfigure, or delete those workloads.
 
-The gateway is available on the TU/e network or VPN at:
-
-```text
-https://spike-gateway-runai-aiteam.inference.spike.tue.nl/v1
-```
+The gateway is available on the TU/e network or VPN. The current gateway base
+URL, access procedures, and live service details are maintained in the
+[Spike hosting project in TU/e GitLab](https://gitlab.tue.nl/hpclab/llm-hosting/spike-hosting).
 
 ## Current service information
 
 To use the service, connect to TU/e VPN and request a personal API key from your
-SCC AI Engineer or `h.zhang@tue.nl`. The key gives access to the shared gateway;
-it does not grant permission to process data that has not been approved for the
-project.
+SCC AI Engineer or via the [Spike hosting project in TU/e GitLab](https://gitlab.tue.nl/hpclab/llm-hosting/spike-hosting).
+The key gives access to the shared gateway; it does not grant permission to process
+data that has not been approved for the project.
 
 Use the [Spike hosting project in TU/e
 GitLab](https://gitlab.tue.nl/hpclab/llm-hosting/spike-hosting) for the live
-model catalogue, availability, examples, and changelog. TU/e GitLab may ask you
+model catalogue, endpoint base URL, availability, examples, and changelog. TU/e GitLab may ask you
 to sign in. Model revisions, request limits, and availability can change, so do
 not copy a model identifier from another project or an old example.
 
@@ -63,7 +61,8 @@ For an OpenAI-compatible endpoint, keep the issued values in local environment
 variables:
 
 ```bash
-export HOSTED_MODEL_BASE_URL='https://spike-gateway-runai-aiteam.inference.spike.tue.nl/v1'
+# Obtain the current gateway base URL from the Spike hosting project in TU/e GitLab
+export HOSTED_MODEL_BASE_URL='https://<hosted-model-gateway-endpoint>/v1'
 export HOSTED_MODEL_TOKEN='your-personal-api-key'
 ```
 
@@ -113,8 +112,8 @@ not create an unbounded retry loop. Coordinate large batches, benchmarks, and
 load tests with the SCC AI Engineer managing the service.
 
 The gateway returns token counts in the response `usage` field. You can review
-your request and token totals in the [personal usage
-dashboard](https://spike-gateway-runai-aiteam.inference.spike.tue.nl/login)
+your request and token totals in the personal usage dashboard (linked in the
+[Spike hosting project in TU/e GitLab](https://gitlab.tue.nl/hpclab/llm-hosting/spike-hosting))
 using your API key. The current service records usage metadata rather than
 prompt and completion content, but this does not relax the project's data
 classification or approval requirements.
