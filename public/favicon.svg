@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="spikeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c8192e" />
+      <stop offset="100%" stop-color="#8d1020" />
+    </linearGradient>
+  </defs>
+  <!-- Background rounded rect -->
+  <rect width="32" height="32" rx="7" fill="url(#spikeGrad)" />
+  <!-- Stylized Spike / S monogram with compute node motif -->
+  <path d="M22 10.5C22 8.5 20.2 7 17.5 7H11C9.9 7 9 7.9 9 9V13.5C9 15.5 10.8 17 13.5 17H19.5C21 17 22 18 22 19.5V21C22 23 20.2 24.5 17.5 24.5H10C8.9 24.5 8 23.6 8 22.5" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="23" cy="9.5" r="2" fill="#6cbcff" />
+  <circle cx="9" cy="22.5" r="2" fill="#6cbcff" />
+</svg>
