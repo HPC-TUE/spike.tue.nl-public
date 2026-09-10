@@ -40,4 +40,5 @@
 
 @media (max-width: 42rem) {
   .task-grid { grid-template-columns: 1fr; }
+  .sl-markdown-content table { display: block; overflow-x: auto; }
 }
