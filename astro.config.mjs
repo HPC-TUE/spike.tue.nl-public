@@ -86,7 +86,7 @@ export default defineConfig({
             },
           ],
         },
-        { label: 'About Spike', items: [{ slug: 'publications' }] },
+        { label: 'About Spike', items: [{ slug: 'publications' }, { slug: 'privacy' }, { slug: 'terms' }] },
         { label: 'Help', items: [{ slug: 'troubleshooting' }, { slug: 'support' }] },
       ],
     }),
