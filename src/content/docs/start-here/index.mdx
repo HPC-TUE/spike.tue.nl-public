@@ -11,6 +11,7 @@ sensitivity: public
 ---
 
 import NextSteps from '../../../components/NextSteps.astro';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Spike is not a self-service cluster where an account is created immediately
 after a form is submitted. Access starts with a conversation. The
@@ -19,6 +20,9 @@ available capacity. If Spike is the right platform and space is available, an
 AI engineer will onboard you personally.
 
 ## The route onto Spike
+
+<Tabs syncKey="platform">
+  <TabItem label="Researchers (Spike 1)">
 
 1. **Submit an access request.** Use the
    [Service Desk form](https://tue.topdesk.net/tas/public/ssp/content/serviceflow?unid=93e8b8b00471499593597171aaddaf34)
@@ -39,6 +43,26 @@ AI engineer will onboard you personally.
 5. **Start with an engineer nearby.** After onboarding, you will remain in close
    contact with an SCC AI engineer while you bring up the first real workloads,
    resolve early problems, and learn to use the system efficiently.
+
+  </TabItem>
+  <TabItem label="Companies (Spike A)">
+
+1. **Exploration & use-case intake.** Contact **Niels te Poel** (`ntepoel@bom.nl`),
+   Business Developer for Supercomputing Brabant, to explore your AI challenge,
+   define project scope, and establish an NDA where needed.
+2. **Technical & data intake.** Meet with the Project Manager, SCC AI Engineer,
+   and Data Steward to evaluate feasibility, Blackwell B300 compute needs,
+   VAST Data storage, security, privacy, and IP protection.
+3. **Go / No-Go decision & contracting.** Leadership issues formal approval to proceed
+   on Spike A; execute the commercial SLA and Data Processing Agreement (DPA, if required).
+4. **TU/e NOP account registration.** Team members submit the User Account
+   Registration Form to obtain external TU/e NOP accounts (*Noppers*) for secure VPN access.
+5. **Onboarding & project realization.** An SCC AI engineer provisions your Run:AI
+   project and VAST storage, followed by a dedicated session to launch your first
+   container workloads on Blackwell B300 GPUs.
+
+  </TabItem>
+</Tabs>
 
 ## Come prepared
 

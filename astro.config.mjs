@@ -51,12 +51,28 @@ export default defineConfig({
         },
         {
           label: 'LLM hosting',
-          items: [{ slug: 'llm-hosting', label: 'Current service and access' }],
+          items: [
+            {
+              slug: 'llm-hosting',
+              label: 'Current service and access',
+              badge: { text: 'Spike 1', variant: 'note' },
+            },
+          ],
         },
         {
           label: 'Advanced & experimental',
           items: [
             { slug: 'advanced' },
+            {
+              slug: 'advanced/hardware-blackwell-b200',
+              label: 'Blackwell B200 hardware',
+              badge: { text: 'Spike 1', variant: 'note' },
+            },
+            {
+              slug: 'advanced/hardware-blackwell-b300',
+              label: 'Blackwell B300 hardware',
+              badge: { text: 'Spike A', variant: 'tip' },
+            },
             { slug: 'advanced/runai-cli' },
             { slug: 'advanced/accelerate' },
             { slug: 'advanced/multi-gpu' },

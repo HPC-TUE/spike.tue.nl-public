@@ -1,0 +1,829 @@
+---
+---
+
+<div class="track-selector not-content" data-track-selector>
+  <!-- Segmented Floating Pill Tabs -->
+  <div class="track-control-bar">
+    <div class="track-segmented-control" role="tablist" aria-label="Select your documentation track">
+      <div class="sliding-pill" data-sliding-pill aria-hidden="true"></div>
+      
+      <button
+        type="button"
+        role="tab"
+        class="segmented-btn active"
+        id="tab-researchers"
+        aria-selected="true"
+        aria-controls="panel-researchers"
+        data-track="researchers"
+        data-sync-label="Researchers (Spike 1)"
+      >
+        <span class="btn-label">Researchers & Academia</span>
+        <span class="btn-badge">Spike 1</span>
+      </button>
+
+      <button
+        type="button"
+        role="tab"
+        class="segmented-btn"
+        id="tab-companies"
+        aria-selected="false"
+        aria-controls="panel-companies"
+        data-track="companies"
+        data-sync-label="Companies (Spike A)"
+      >
+        <span class="btn-label">Companies & Industry</span>
+        <span class="btn-badge company">Spike A</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Panels Container -->
+  <div class="track-panels-container">
+    <!-- Panel: Researchers (Spike 1) -->
+    <div
+      id="panel-researchers"
+      role="tabpanel"
+      tabindex="0"
+      aria-labelledby="tab-researchers"
+      class="track-panel active"
+    >
+      <div class="track-hero">
+        <div class="track-hero__text">
+          <span class="track-eyebrow">Academic Research Track</span>
+          <h3 class="track-title">Spike 1 for TU/e Researchers & Students</h3>
+          <p class="track-description">
+            For <strong>TU/e researchers</strong> conducting <strong>high-performance AI research</strong>. Containing state-of-the-art GPU resources for training, high-performing storage & interconnects between nodes and hosted frontier Large Language Models.
+          </p>
+        </div>
+        <div class="track-hero__specs">
+          <div class="spec-pill">
+            <span class="spec-dot green">●</span>
+            <span class="spec-name">Compute:</span>
+            <span class="spec-val">Academic NVIDIA B200 Partitions</span>
+          </div>
+          <div class="spec-pill">
+            <span class="spec-dot">●</span>
+            <span class="spec-name">Storage:</span>
+            <span class="spec-val">250 TiB High-Performing Project Space (DDN) with S3 Option</span>
+          </div>
+          <div class="spec-pill">
+            <span class="spec-dot">●</span>
+            <span class="spec-name">Services:</span>
+            <span class="spec-val">Dedicated AI engineering support, NVIDIA AI Enterprise & hosted frontier LLMs</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- User-Centric Journey Stepper -->
+      <div class="journey-flow">
+        <div class="journey-header">
+          <span class="journey-eyebrow">Your Documentation Journey</span>
+          <h4 class="journey-title">Step-by-Step Path from Access to Running Jobs</h4>
+        </div>
+
+        <div class="journey-steps">
+          <a href="/start-here/intake/" class="journey-step">
+            <div class="step-badge">01</div>
+            <div class="step-content">
+              <span class="step-title">Intake & Consultation</span>
+              <span class="step-desc">Submit TOPdesk request & hold 1-on-1 discussion with an SCC AI engineer.</span>
+            </div>
+            <span class="step-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/access/accounts/" class="journey-step">
+            <div class="step-badge">02</div>
+            <div class="step-content">
+              <span class="step-title">Accounts & Access</span>
+              <span class="step-desc">Sign in with TU/e SSO on Run:AI, connect EduVPN, and verify Harbor access.</span>
+            </div>
+            <span class="step-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/storage/data/" class="journey-step">
+            <div class="step-badge">03</div>
+            <div class="step-content">
+              <span class="step-title">Storage Architecture</span>
+              <span class="step-desc">250 TiB high-performing DDN project space at `/data` with S3 connection options.</span>
+            </div>
+            <span class="step-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/storage/file-transfer/" class="journey-step">
+            <div class="step-badge">04</div>
+            <div class="step-content">
+              <span class="step-title">Data Transfer</span>
+              <span class="step-desc">Move datasets efficiently via direct workload downloads, S3 sync, or rsync.</span>
+            </div>
+            <span class="step-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/advanced/hardware-blackwell-b200/" class="journey-step">
+            <div class="step-badge">05</div>
+            <div class="step-content">
+              <span class="step-title">Blackwell B200 Compute</span>
+              <span class="step-desc">Deploy workloads across 8x B200 GPUs (192GB HBM3e) with NVLink mesh & FP4 precision.</span>
+            </div>
+            <span class="step-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/support/" class="journey-step highlight-support">
+            <div class="step-badge">06</div>
+            <div class="step-content">
+              <span class="step-title">Intimate AI Engineer Support</span>
+              <span class="step-desc">Dedicated hands-on guidance from SCC AI engineers throughout your research lifecycle.</span>
+            </div>
+            <span class="step-arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="track-footer">
+        <div class="track-footer__notice">
+          <span class="icon">⚡</span>
+          <span>Academic research workloads operate on dedicated DGX B200 nodes with fair-share GPU scheduling and 250 TiB DDN storage.</span>
+        </div>
+        <div class="track-btn-group">
+          <a href="/advanced/hardware-blackwell-b200/" class="track-secondary-btn">
+            Blackwell B200 Specs <span aria-hidden="true">→</span>
+          </a>
+          <a href="/start-here/" class="track-primary-btn">
+            Start Researcher Onboarding <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: Companies (Spike A) -->
+    <div
+      id="panel-companies"
+      role="tabpanel"
+      tabindex="0"
+      aria-labelledby="tab-companies"
+      class="track-panel"
+      hidden
+    >
+      <div class="track-hero">
+        <div class="track-hero__text">
+          <span class="track-eyebrow company">Supercomputing Brabant & TU/e Partnership</span>
+          <h3 class="track-title">Spike A for Commercial Partners & Enterprise</h3>
+          <p class="track-description">
+            Provided through <strong>Supercomputing Brabant</strong> and hosted by <strong>TU/e</strong> as a founding major partner, giving commercial R&D teams dedicated Blackwell B300 hardware, high-throughput VAST parallel storage, and enterprise SLAs.
+          </p>
+        </div>
+        <div class="track-hero__specs">
+          <div class="spec-pill highlight">
+            <span class="spec-dot red">●</span>
+            <span class="spec-name">Compute:</span>
+            <span class="spec-val">Dedicated DGX B300 Pool (8 GPUs · 256 Cores · 2.3 TB RAM)</span>
+          </div>
+          <div class="spec-pill highlight">
+            <span class="spec-dot blue">●</span>
+            <span class="spec-name">Storage:</span>
+            <span class="spec-val">VAST Data All-Flash NVMe Parallel Storage</span>
+          </div>
+          <div class="spec-pill">
+            <span class="spec-dot amber">●</span>
+            <span class="spec-name">Environment:</span>
+            <span class="spec-val">Custom Inference & Training with Enterprise SLA</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- User-Centric Journey Stepper -->
+      <div class="journey-flow">
+        <div class="journey-header">
+          <span class="journey-eyebrow company">Commercial Partner Journey</span>
+          <h4 class="journey-title">Step-by-Step Path for Enterprise Projects</h4>
+        </div>
+
+        <div class="journey-steps">
+          <a href="/start-here/intake/" class="journey-step">
+            <div class="step-badge company">01</div>
+            <div class="step-content">
+              <span class="step-title">Use-Case Intake & NDA</span>
+              <span class="step-desc">Kickoff with Niels te Poel (Supercomputing Brabant) to explore your use case; NDA if required.</span>
+            </div>
+            <span class="step-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/start-here/intake/" class="journey-step">
+            <div class="step-badge company">02</div>
+            <div class="step-content">
+              <span class="step-title">Technical & Data Intake</span>
+              <span class="step-desc">Joint review of B300 compute, VAST storage, security, privacy, and company IP protection.</span>
+            </div>
+            <span class="step-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/access/accounts/" class="journey-step">
+            <div class="step-badge company">03</div>
+            <div class="step-content">
+              <span class="step-title">Contracting & NOP Accounts</span>
+              <span class="step-desc">Execute commercial SLA/DPA and register external TU/e NOP accounts for secure VPN access.</span>
+            </div>
+            <span class="step-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/storage/data/" class="journey-step">
+            <div class="step-badge company">04</div>
+            <div class="step-content">
+              <span class="step-title">VAST Parallel Storage</span>
+              <span class="step-desc">Mount all-flash NVMe parallel storage volumes at `/data` delivering multi-GB/s parallel I/O.</span>
+            </div>
+            <span class="step-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/advanced/hardware-blackwell-b300/" class="journey-step">
+            <div class="step-badge company">05</div>
+            <div class="step-content">
+              <span class="step-title">Blackwell B300 Compute</span>
+              <span class="step-desc">Deploy across 8x B300 GPUs per DGX node (256 CPU cores, 2.3 TB RAM) with native FP4/FP8.</span>
+            </div>
+            <span class="step-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/support/" class="journey-step highlight-support company">
+            <div class="step-badge company">06</div>
+            <div class="step-content">
+              <span class="step-title">Realization & Intimate Support</span>
+              <span class="step-desc">Intimate, 1-on-1 technical partnership with SCC AI engineers throughout project execution.</span>
+            </div>
+            <span class="step-arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="track-footer">
+        <div class="track-footer__notice">
+          <span class="icon">🔒</span>
+          <span>Commercial workloads operate on dedicated DGX B300 nodes (8 GPUs, 256 cores, 2.3 TB RAM) with all-flash VAST parallel storage.</span>
+        </div>
+        <div class="track-btn-group">
+          <a href="/advanced/hardware-blackwell-b300/" class="track-secondary-btn">
+            Blackwell B300 Specs <span aria-hidden="true">→</span>
+          </a>
+          <a href="/start-here/intake/" class="track-primary-btn company">
+            Company Intake Guide <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* --------------------------------------------------------------------------
+     TrackSelector — Emil Kowalski Inspired Craft & Ergonomics
+     -------------------------------------------------------------------------- */
+
+  .track-selector {
+    margin: 2.25rem 0 3rem;
+    border: 1px solid var(--spike-border, #d7dde3);
+    border-radius: 1rem;
+    background: var(--spike-surface, #ffffff);
+    box-shadow: 0 2px 4px rgb(29 37 44 / 0.04), 0 12px 28px rgb(29 37 44 / 0.06);
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  /* Segmented Control Bar */
+  .track-control-bar {
+    padding: 0.85rem 1rem;
+    background: var(--spike-muted, #f4f6f8);
+    border-bottom: 1px solid var(--spike-border, #d7dde3);
+    display: flex;
+    justify-content: center;
+  }
+
+  .track-segmented-control {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    background: color-mix(in srgb, var(--spike-border, #d7dde3) 40%, var(--spike-muted, #f4f6f8));
+    padding: 0.3rem;
+    border-radius: 9999px;
+    border: 1px solid var(--spike-border, #d7dde3);
+    width: 100%;
+    max-width: 42rem;
+  }
+
+  /* Floating sliding indicator pill */
+  .sliding-pill {
+    position: absolute;
+    top: 0.3rem;
+    left: 0;
+    border-radius: 9999px;
+    background: var(--spike-surface, #ffffff);
+    box-shadow: 0 1px 3px rgb(29 37 44 / 0.1), 0 4px 12px rgb(29 37 44 / 0.05);
+    border: 1px solid var(--spike-border, #d7dde3);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                width 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  :root[data-theme='dark'] .sliding-pill {
+    background: #25333f;
+    border-color: #4c5d6e;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
+  }
+
+  /* Button inside segmented control */
+  .segmented-btn {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.15rem;
+    background: transparent;
+    border: none;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--sl-color-gray-3, #667);
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.12s ease;
+    user-select: none;
+    outline: none;
+  }
+
+  .segmented-btn:hover {
+    color: var(--spike-ink, #1d252c);
+  }
+
+  .segmented-btn:active {
+    transform: scale(0.985);
+  }
+
+  .segmented-btn.active {
+    color: var(--spike-ink, #1d252c);
+    font-weight: 700;
+  }
+
+  .segmented-btn:focus-visible {
+    outline: 2px solid var(--spike-blue);
+    outline-offset: 2px;
+  }
+
+  .btn-label {
+    letter-spacing: -0.01em;
+  }
+
+  .btn-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--spike-blue, #0069b4) 15%, transparent);
+    color: var(--spike-blue, #0069b4);
+  }
+
+  .btn-badge.company {
+    background: color-mix(in srgb, var(--spike-red, #c8192e) 15%, transparent);
+    color: var(--spike-red, #c8192e);
+  }
+
+  /* Panels */
+  .track-panels-container {
+    padding: 1.75rem 1.75rem 2rem;
+  }
+
+  .track-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    animation: panelEnter 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .track-panel[hidden] {
+    display: none;
+  }
+
+  @keyframes panelEnter {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Track Hero */
+  .track-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--spike-border, #d7dde3);
+  }
+
+  .track-eyebrow {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--spike-blue, #0069b4);
+    margin-bottom: 0.3rem;
+  }
+
+  .track-eyebrow.company {
+    color: var(--spike-red, #c8192e);
+  }
+
+  .track-title {
+    margin: 0 0 0.4rem;
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--spike-ink, #1d252c);
+    line-height: 1.25;
+  }
+
+  .track-description {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--sl-color-gray-3, #556);
+    max-width: 65ch;
+  }
+
+  .track-description strong {
+    color: var(--spike-ink, #1d252c);
+    font-weight: 700;
+  }
+
+  :root[data-theme='dark'] .track-description strong {
+    color: var(--sl-color-white, #ffffff);
+  }
+
+  /* Specs Pills */
+  .track-hero__specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 0.35rem;
+  }
+
+  .spec-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.8rem;
+    background: var(--spike-muted, #f4f6f8);
+    border: 1px solid var(--spike-border, #d7dde3);
+    border-radius: 9999px;
+    font-size: 0.82rem;
+    color: var(--spike-ink, #1d252c);
+  }
+
+  .spec-pill.highlight {
+    border-color: color-mix(in srgb, var(--spike-blue, #0069b4) 30%, var(--spike-border));
+    background: color-mix(in srgb, var(--spike-blue, #0069b4) 5%, var(--spike-muted));
+  }
+
+  .spec-dot {
+    font-size: 0.65rem;
+    color: var(--spike-blue, #0069b4);
+  }
+  .spec-dot.green { color: var(--spike-green, #76b900); }
+  .spec-dot.red { color: var(--spike-red, #c8192e); }
+  .spec-dot.blue { color: var(--spike-blue, #0069b4); }
+  .spec-dot.amber { color: var(--spike-amber, #a45d00); }
+
+  .spec-name {
+    font-weight: 700;
+    opacity: 0.85;
+  }
+
+  .spec-val {
+    font-weight: 500;
+  }
+
+  /* Journey Flow & Steps */
+  .journey-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .journey-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .journey-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--sl-color-text-accent);
+  }
+
+  .journey-title {
+    margin: 0;
+    font-size: 1.12rem;
+    font-weight: 750;
+    letter-spacing: -0.015em;
+    color: var(--spike-ink, #1d252c);
+  }
+
+  .journey-steps {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  .journey-step {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 1rem 1.15rem;
+    background: var(--spike-surface, #ffffff);
+    border: 1px solid var(--spike-border, #d7dde3);
+    border-radius: var(--spike-radius, 0.45rem);
+    text-decoration: none !important;
+    color: inherit !important;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .journey-step:hover {
+    border-color: var(--spike-blue, #0069b4);
+    box-shadow: 0 4px 14px rgb(0 105 180 / 0.08);
+    transform: translateY(-1px);
+  }
+
+  .journey-step:active {
+    transform: translateY(0);
+  }
+
+  .journey-step.highlight-support {
+    border-color: color-mix(in srgb, var(--spike-blue, #0069b4) 30%, var(--spike-border));
+    background: color-mix(in srgb, var(--spike-blue, #0069b4) 4%, var(--spike-surface));
+  }
+
+  .journey-step.highlight-support.company {
+    border-color: color-mix(in srgb, var(--spike-red, #c8192e) 30%, var(--spike-border));
+    background: color-mix(in srgb, var(--spike-red, #c8192e) 4%, var(--spike-surface));
+  }
+
+  .step-badge {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--spike-blue, #0069b4) 14%, transparent);
+    color: var(--spike-blue, #0069b4);
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
+
+  .step-badge.company {
+    background: color-mix(in srgb, var(--spike-red, #c8192e) 14%, transparent);
+    color: var(--spike-red, #c8192e);
+  }
+
+  .step-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .step-title {
+    font-size: 0.96rem;
+    font-weight: 750;
+    color: var(--spike-ink, #1d252c);
+    letter-spacing: -0.01em;
+  }
+
+  .step-desc {
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: var(--sl-color-gray-3, #556);
+  }
+
+  .step-arrow {
+    align-self: center;
+    font-size: 1.1rem;
+    color: var(--sl-color-gray-3, #889);
+    transition: transform 0.15s ease, color 0.15s ease;
+  }
+
+  .journey-step:hover .step-arrow {
+    color: var(--spike-blue, #0069b4);
+    transform: translateX(3px);
+  }
+
+  /* Track Footer */
+  .track-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--spike-border, #d7dde3);
+  }
+
+  .track-footer__notice {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--sl-color-gray-3, #667);
+    max-width: 45ch;
+    line-height: 1.45;
+  }
+
+  .track-btn-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .track-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.65rem 1.35rem;
+    background: var(--spike-blue, #0069b4);
+    color: #ffffff !important;
+    text-decoration: none !important;
+    border-radius: var(--spike-radius, 0.45rem);
+    font-size: 0.9rem;
+    font-weight: 650;
+    box-shadow: 0 1px 3px rgb(0 105 180 / 0.2);
+    transition: filter 0.15s ease, transform 0.12s ease;
+  }
+
+  .track-primary-btn:hover {
+    filter: brightness(1.08);
+  }
+
+  .track-primary-btn:active {
+    transform: scale(0.985);
+  }
+
+  .track-primary-btn.company {
+    background: var(--spike-red, #c8192e);
+    box-shadow: 0 1px 3px rgb(200 25 46 / 0.2);
+  }
+
+  .track-secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.65rem 1.15rem;
+    background: var(--spike-muted, #f4f6f8);
+    color: var(--spike-ink, #1d252c) !important;
+    text-decoration: none !important;
+    border: 1px solid var(--spike-border, #d7dde3);
+    border-radius: var(--spike-radius, 0.45rem);
+    font-size: 0.9rem;
+    font-weight: 650;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .track-secondary-btn:hover {
+    background: color-mix(in srgb, var(--spike-border) 25%, var(--spike-muted));
+    border-color: color-mix(in srgb, var(--spike-blue) 40%, var(--spike-border));
+  }
+
+  /* Responsive Mobile Breakpoint */
+  @media (max-width: 42rem) {
+    .track-panels-container {
+      padding: 1.25rem;
+    }
+
+    .track-segmented-control {
+      flex-direction: column;
+      border-radius: var(--spike-radius, 0.45rem);
+    }
+
+    .sliding-pill {
+      display: none; /* Fallback to standard active background on stacked mobile */
+    }
+
+    .segmented-btn {
+      width: 100%;
+      border-radius: var(--spike-radius, 0.45rem);
+      justify-content: flex-start;
+    }
+
+    .segmented-btn.active {
+      background: var(--spike-surface, #ffffff);
+      box-shadow: var(--spike-shadow);
+    }
+
+    .journey-steps {
+      grid-template-columns: 1fr;
+    }
+
+    .track-footer {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .track-btn-group,
+    .track-primary-btn,
+    .track-secondary-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<script is:inline>
+(() => {
+  const STORAGE_KEY = 'starlight-synced-tabs__platform';
+  const container = document.querySelector('[data-track-selector]');
+  if (!container) return;
+
+  const control = container.querySelector('.track-segmented-control');
+  const pill = container.querySelector('[data-sliding-pill]');
+  const tabs = container.querySelectorAll('.segmented-btn');
+  const panels = container.querySelectorAll('.track-panel');
+
+  function updatePill(activeBtn) {
+    if (!pill || !control || !activeBtn) return;
+    const isMobile = window.innerWidth <= 672;
+    if (isMobile) return;
+
+    const controlRect = control.getBoundingClientRect();
+    const btnRect = activeBtn.getBoundingClientRect();
+    pill.style.width = `${btnRect.width}px`;
+    pill.style.height = `${btnRect.height}px`;
+    pill.style.transform = `translateX(${btnRect.left - controlRect.left}px)`;
+  }
+
+  function switchTrack(trackName, syncLabel, persist = true) {
+    let activeBtn = null;
+    tabs.forEach(t => {
+      const isActive = t.getAttribute('data-track') === trackName;
+      t.classList.toggle('active', isActive);
+      t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      if (isActive) activeBtn = t;
+    });
+
+    panels.forEach(p => {
+      const isTarget = p.id === `panel-${trackName}`;
+      p.classList.toggle('active', isTarget);
+      if (isTarget) {
+        p.removeAttribute('hidden');
+      } else {
+        p.setAttribute('hidden', 'true');
+      }
+    });
+
+    updatePill(activeBtn);
+
+    if (persist && syncLabel) {
+      try {
+        localStorage.setItem(STORAGE_KEY, syncLabel);
+      } catch (e) {}
+    }
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const track = tab.getAttribute('data-track');
+      const syncLabel = tab.getAttribute('data-sync-label');
+      if (track) switchTrack(track, syncLabel, true);
+    });
+  });
+
+  window.addEventListener('resize', () => {
+    const activeBtn = container.querySelector('.segmented-btn.active');
+    updatePill(activeBtn);
+  });
+
+  // Restore previous selection on mount
+  let activeTrack = 'researchers';
+  let activeLabel = 'Researchers (Spike 1)';
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && saved.includes('Spike A')) {
+      activeTrack = 'companies';
+      activeLabel = 'Companies (Spike A)';
+    }
+  } catch (e) {}
+
+  switchTrack(activeTrack, activeLabel, false);
+  setTimeout(() => {
+    const activeBtn = container.querySelector('.segmented-btn.active');
+    updatePill(activeBtn);
+  }, 50);
+})();
+</script>

@@ -5,17 +5,26 @@ template: doc
 audience: Researchers and research-support staff
 maturity: Verified
 lastVerified: 2026-08-28
-products: [Run:ai, Harbor, Podman, vLLM]
+products: [Spike-1, Spike-A, Run:ai, Harbor, Podman, vLLM]
 sourceRefs: [runai_guide, account-setup-guide-harbor-spike, spike-hosting]
 sensitivity: public
 ---
 
 import TaskLink from '../../components/TaskLink.astro';
+import TrackSelector from '../../components/TrackSelector.astro';
 
 Spike is TU/e's shared environment for research that needs serious GPU
 computing. It brings hardware, scheduling, project storage, and reusable
 container environments together so research teams can spend less time
 assembling infrastructure and more time running experiments.
+
+## Choose your platform path
+
+Select your team profile to understand the architecture, storage, and onboarding route for your workloads before exploring the documentation:
+
+<TrackSelector />
+
+## Common task guides
 
 <div class="task-grid">
   <TaskLink href="/start-here/" eyebrow="Getting started" title="Get access" description="Check what you need before submitting work to Spike." />
@@ -31,6 +40,10 @@ Spike is a shared university investment, made possible by EAISI and six TU/e
 departments: Mathematics and Computer Science, Electrical Engineering,
 Mechanical Engineering, Biomedical Engineering, Industrial Design, and
 Industrial Engineering & Innovation Sciences.
+
+For commercial and industry computing on Spike A, dedicated NVIDIA Blackwell
+B300 systems are provided through Supercomputing Brabant and hosted and operated
+by TU/e as a founding major partner.
 
 That mix matters. Spike supports work across disciplines, from medical imaging
 and scientific machine learning to design and engineering research. The TU/e

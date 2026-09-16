@@ -1,0 +1,78 @@
+---
+title: NVIDIA Blackwell B200 hardware
+description: Architecture, compute capabilities, and workload optimization for Spike 1 DGX Blackwell B200 nodes.
+audience: Researchers and performance engineers
+maturity: Verified
+lastVerified: 2026-09-16
+products: [Spike-1, NVIDIA GPU, Run:ai]
+requiresVpn: true
+sourceRefs: [nvidia-blackwell-architecture, DGX-B200-specs, runai_guide]
+sensitivity: public
+---
+
+import NextSteps from '../../../components/NextSteps.astro';
+
+Spike 1 provides NVIDIA's flagship **DGX B200 systems** for TU/e academic research.
+Engineered for demanding scientific machine learning, computer vision, and foundation
+model workloads, each DGX node combines eight interconnected NVIDIA Blackwell B200
+GPUs, high-bandwidth NVLink switching, and high-performance 250 TiB DDN project storage.
+
+## DGX B200 architecture highlights
+
+The DGX B200 introduces significant generational speedups in tensor compute, memory
+capacity, and inter-GPU communication:
+
+| Capability | Specification | Workload benefit |
+| --- | --- | --- |
+| **GPU accelerator** | 8x NVIDIA Blackwell B200 GPUs | Next-generation streaming multiprocessors with high-density Tensor Cores |
+| **GPU memory (vRAM)** | 192 GB HBM3e per GPU (1.5 TB total per node) | Accommodates large models, extended context windows, and large batch sizes |
+| **Memory bandwidth** | 8.0 TB/s per GPU | Dramatically reduces memory-bandwidth bottlenecks during attention operations |
+| **Interconnect** | 5th-Gen NVLink (1.8 TB/s bi-directional per GPU) | NVSwitch mesh connecting all 8 GPUs for ultra-fast all-reduce and tensor parallelism |
+| **Precision support** | FP4 (NVFP4), FP8, BF16, FP16, TF32, FP64 | Second-generation Transformer Engine with native micro-scaling acceleration |
+| **Project storage** | 250 TiB high-performing DDN space | High-throughput parallel storage mounted at `/data` with S3 connection options |
+| **Software suite** | NVIDIA AI Enterprise | Optimized containers, validated runtimes, and profiling tools |
+
+## Second-generation Transformer Engine & precision
+
+The Blackwell B200 features hardware-accelerated precision formats tailored for modern
+deep learning:
+
+- **NVFP4 (4-bit floating point):** Hardware micro-scaling format providing up to 2× the
+  inference throughput of FP8 while preserving accuracy for supported model architectures.
+- **FP8 (8-bit floating point):** Accelerated training and fine-tuning with automatic
+  scaling via PyTorch `torch.ao` or NVIDIA Transformer Engine.
+- **BF16 / FP16:** Native 16-bit mixed precision widely supported across standard
+  PyTorch, JAX, and Hugging Face pipelines.
+
+## Run:AI resource presets on Spike 1
+
+Workloads request Blackwell B200 GPUs through the Run:AI scheduler. Match your request
+to your workload requirements:
+
+- **1x B200 (192 GB vRAM):** Prototyping, exploratory notebooks, single-GPU training,
+  and medium-scale model fine-tuning.
+- **2x B200 / 4x B200:** Distributed data parallel (DDP) or Fully Sharded Data Parallel
+  (FSDP) training across multiple accelerators.
+- **8x B200 (Full DGX Node):** Full-node distributed runs utilizing the full 1.8 TB/s NVLink
+  fabric for maximum tensor parallel and pipeline parallel efficiency.
+
+## High-throughput DDN storage integration
+
+Because B200 Tensor Cores process matrix operations rapidly, keeping GPUs saturated
+requires an efficient data pipeline:
+
+- Mount your project's persistent volume claim (PVC) at `/data` as outlined in
+  [Storage and data](/storage/data/).
+- For large datasets, leverage the **S3 connection option** or package data into
+  chunked sequential formats (e.g. WebDataset or Sharded Parquet) to avoid file-system
+  metadata overhead.
+- Consult [Monitoring and profiling](/start-here/monitoring-and-profiling/) to track
+  GPU kernel utilization and verify I/O wait times remain minimal.
+
+<NextSteps links={[
+  { href: '/workloads/training/', label: 'Submit a training job on B200' },
+  { href: '/advanced/multi-gpu/', label: 'Distributed multi-GPU training guide' },
+  { href: '/storage/data/', label: 'Configure project storage' },
+  { href: '/llm-hosting/', label: 'Explore hosted frontier LLMs' },
+]} />
+
