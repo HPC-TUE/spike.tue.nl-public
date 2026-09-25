@@ -1,0 +1,99 @@
+---
+title: NVIDIA Blackwell B300 hardware
+description: Architecture, compute capabilities, and workload considerations for Spike A DGX Blackwell B300 nodes.
+audience: Companies and performance engineers
+maturity: Verified
+lastVerified: 2026-09-16
+products: [Spike-A, NVIDIA GPU, Run:ai]
+requiresVpn: true
+sourceRefs: [nvidia-blackwell-architecture, spike-a-specs, brightcomputing-node-specs]
+sensitivity: public
+---
+
+import NextSteps from '../../../components/NextSteps.astro';
+
+Spike A provides dedicated **NVIDIA DGX Blackwell B300 nodes** provided through
+**Supercomputing Brabant** and hosted at Eindhoven University of Technology (TU/e)
+as a founding major partner. Reserved exclusively for commercial partners,
+industry R&D teams, and enterprise collaborative research, the platform combines
+Blackwell's next-generation accelerator architecture with all-flash VAST Data
+parallel storage to support large-scale foundation models, multi-modal training, and
+high-throughput inference with enterprise SLAs.
+
+## DGX B300 compute node specifications
+
+Each Spike A DGX B300 node integrates eight interconnected NVIDIA Blackwell B300
+GPUs backed by high-density CPU cores and host memory:
+
+| Metric / Capability | Cluster Specification | Workload Benefit |
+| --- | --- | --- |
+| **Node system** | NVIDIA DGX B300 | Flagship enterprise AI supercomputing node architecture |
+| **Node category** | `dgx-b300` | Bright Cluster Manager label: `brightcomputing.com/node-category: dgx-b300` |
+| **Node status** | `Ready` | Fully provisioned and operational in the Spike A compute pool |
+| **GPU accelerators** | 8x NVIDIA Blackwell B300 GPUs (`8.00`) | Extreme tensor compute density for large foundation models and distributed training |
+| **GPU interconnect** | 5th-Generation NVLink & NVSwitch | High bi-directional bandwidth mesh across all 8 GPUs for ultra-fast all-reduce |
+| **Host CPU cores** | 256 CPU cores (`256.00`) | High core count for parallel data preprocessing, tokenization, and multi-worker I/O pipelines |
+| **Host system memory** | 2.3 TB system RAM (2.16 TB allocatable) | Massive memory capacity for large in-memory dataset caching, sharded state, and buffer headroom |
+| **Precision support** | FP4 (NVFP4), FP8, BF16, FP16, TF32, FP64 | Native micro-scaling formats for accelerated training and high-throughput inference |
+| **Storage integration** | All-Flash VAST Data parallel storage | Direct high-throughput I/O feeding GPU memory at multi-GB/s rates |
+
+## Second-generation Transformer Engine & precision
+
+The second-generation Transformer Engine on Blackwell introduces hardware-accelerated
+micro-scaling formats (including 4-bit floating point, NVFP4). When supported by
+your framework, FP4 compute delivers up to twice the throughput of FP8 while
+maintaining model convergence for supported architectures:
+
+- **NVFP4 (4-bit floating point):** Optimized for ultra-fast model inference and
+  quantized fine-tuning workloads.
+- **FP8 (8-bit floating point):** Recommended for pre-training and large-scale fine-tuning
+  with standard PyTorch `torch.ao` or NVIDIA Transformer Engine.
+- **BF16 / FP16:** Standard fallback formats with broad framework support across all
+  deep learning libraries.
+
+## Container and environment recommendations
+
+To leverage Blackwell B300 capabilities, ensure your container images include:
+
+1. **CUDA Toolkit 12.8 or newer:** Blackwell architectures require modern CUDA
+   compiler and runtime support.
+2. **NVIDIA driver compatibility:** Spike A compute nodes run modern enterprise
+   drivers certified for Blackwell B300 silicon.
+3. **Framework versions:** Use PyTorch 2.5 or newer, or specialized runtimes such as
+   TensorRT-LLM, vLLM (custom commercial deployments), or Megatron-LM built with
+   Blackwell architecture flags (`compute_100` / `sm_100`).
+4. **Build workflow:** Follow the approved [Podman and Harbor workflow](/images/podman-harbor/)
+   to build and tag rootless images for the Spike A container registry.
+
+## Run:AI resource presets on Spike A
+
+Workloads on Spike A request Blackwell B300 resources through the Run:AI scheduler.
+Select the preset that fits your workload scale:
+
+- **1x B300:** Single-GPU prototyping, script verification, interactive notebooks, and small-scale evaluation.
+- **2x B300 / 4x B300:** Multi-GPU training for medium-to-large models via DistributedDataParallel (DDP) or Fully Sharded Data Parallel (FSDP).
+- **8x B300 (Full DGX B300 node):** Accesses all 8 GPUs, up to 256 CPU cores, 2.16 TB allocatable host memory, and full intra-node NVLink mesh for maximum tensor parallelism, pipeline parallelism, and large foundation model fine-tuning.
+
+In addition, workloads targeting the Spike A pool match the node category label:
+`brightcomputing.com/node-category: dgx-b300`.
+
+## Feeding the GPUs with VAST Data
+
+With the extreme compute throughput of the B300, input data loading is frequently
+the primary bottleneck. Spike A couples Blackwell nodes with VAST Data parallel
+storage to ensure continuous I/O saturation:
+
+- Store training data in sequential chunked formats (e.g. WebDataset, Arrow/Parquet,
+  or TFRecords) rather than millions of tiny loose files.
+- Mount your project's VAST Data persistent volume at `/data` or `/vast` as described in
+  the [Storage and data guide](/storage/data/).
+- Review [Monitor and profile a first workload](/start-here/monitoring-and-profiling/)
+  to correlate GPU compute utilization with I/O wait times.
+
+<NextSteps links={[
+  { href: '/storage/data/', label: 'Configure VAST Data storage for Spike A' },
+  { href: '/access/accounts/', label: 'Verify your Spike A project access' },
+  { href: '/images/podman-harbor/', label: 'Build a container image for B300' },
+  { href: '/workloads/training/', label: 'Submit a distributed training job' },
+]} />
+

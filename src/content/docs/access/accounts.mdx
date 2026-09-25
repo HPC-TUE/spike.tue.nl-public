@@ -4,13 +4,19 @@ description: Understand your Spike-1 and Harbor access and confirm that your pro
 audience: Researchers
 maturity: Verified
 lastVerified: 2026-07-29
-products: [Spike-1, Run:ai, Harbor]
+products: [Spike-1, Spike-A, Run:ai, Harbor]
 requiresVpn: true
 sourceRefs: [account-setup-guide-harbor-spike, runai_guide]
 sensitivity: public
 ---
 
 import NextSteps from '../../../components/NextSteps.astro';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Account and project access
+
+<Tabs syncKey="platform">
+  <TabItem label="Researchers (Spike 1)">
 
 After onboarding, you receive access to two connected services. **Spike-1** is
 the compute platform where your workloads run; you submit and manage that work
@@ -23,7 +29,7 @@ documentation; it is not the cluster login. Your project connects Run:ai and
 Harbor and determines which compute resources, data sources, environments, and
 container images you can use.
 
-## Check your access
+### Check your access
 
 1. Open [spike.run.ai](https://spike.run.ai/) and sign in with your TU/e account.
 2. Select the project created during onboarding and confirm that you can open
@@ -34,6 +40,28 @@ container images you can use.
    container images and when asking SCC for help.
 5. If you are off campus, connect EduVPN before testing command-line access,
    data transfer, or port forwarding.
+
+  </TabItem>
+  <TabItem label="Companies (Spike A)">
+
+Commercial partner teams on **Spike A** receive access across three coordinated layers:
+
+1. **TU/e NOP Account (VPN access):** Following completion of the User Account Registration Form, you receive a TU/e Non-Payroll account used to authenticate onto the TU/e VPN and access the secure network boundary.
+2. **Commercial Run:AI Project:** Your dedicated project space connected to the NVIDIA Blackwell B300 GPU pool and VAST Data parallel storage mounts (`/data` or `/vast`).
+3. **Private Harbor Repository:** An isolated registry project at `harbor.spike.tue.nl/<company-project>` for storing proprietary Podman container images.
+
+Sign in at [spike.run.ai](https://spike.run.ai/) using your authorized partner credentials. Your project defines your contracted GPU quotas (NVIDIA Blackwell B300), VAST Data volume mounts, and container registry boundaries.
+
+### Check your access
+
+1. **Connect to TU/e VPN:** Use your issued NOP account credentials to establish a secure VPN connection.
+2. **Verify Run:AI access:** Open [spike.run.ai](https://spike.run.ai/), sign in, and confirm that your commercial project is listed with its Blackwell B300 compute templates and VAST Data storage sources.
+3. **Verify Harbor access:** Open [Harbor](https://harbor.spike.tue.nl/) and confirm that your company's isolated repository project is accessible.
+4. **Tag container images:** Use your company project identifier for container image tagging (`harbor.spike.tue.nl/<company-project>/<image>:<tag>`).
+5. **Contact your AI engineer:** If project quotas, storage mounts, or registry permissions are not visible, notify your assigned SCC AI engineer.
+
+  </TabItem>
+</Tabs>
 
 ## When something is missing
 

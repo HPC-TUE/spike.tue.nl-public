@@ -4,12 +4,13 @@ description: Select project storage and understand lifecycle consequences before
 audience: Researchers
 maturity: Verified
 lastVerified: 2026-08-06
-products: [Run:ai, S3]
+products: [Spike-1, Spike-A, Run:ai, S3, VAST-Data]
 sourceRefs: [runai_guide, SSH-container, GPU-direct-storage, spike-1-automation]
 sensitivity: public
 ---
 
 import NextSteps from '../../../components/NextSteps.astro';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Choose storage before submitting a workload. The storage choice determines
 whether your data survives a restart, retry, or deletion.
@@ -21,7 +22,16 @@ whether your data survives a restart, retry, or deletion.
 | Ephemeral volume | Caches, temporary preprocessing, and disposable scratch data | Removed with the associated workload; never store the only copy of a result. |
 | S3-compatible object storage | Large datasets, shared objects, and transfers between tools | Independent of a workload; access requires a project bucket and credentials. |
 
-## TU/e-managed file storage and NetApp
+## Platform storage architecture
+
+<Tabs syncKey="platform">
+  <TabItem label="Researchers (Spike 1)">
+
+### High-performance DDN project storage
+
+Spike 1 provides a **250 TiB high-performing project space (DDN)** with an **S3 connection option**. Workloads access this storage via Persistent Volume Claims (PVCs) mounted into containers at `/data` or connect to S3 object storage endpoints for large dataset loading and model checkpointing.
+
+### TU/e-managed file storage and NetApp
 
 A TU/e-managed network share, including a NetApp-backed share, is an existing
 data source rather than Spike project storage. Do not assume that a share can be
@@ -35,6 +45,32 @@ Test the chosen route with a small directory before moving the dataset. Confirm
 permissions, destination capacity, file counts, and sample checksums. Never copy
 a NetApp password, storage token, or private key into a container image,
 notebook, workload command, or support ticket.
+
+  </TabItem>
+  <TabItem label="Companies (Spike A)">
+
+### VAST Data parallel enterprise storage
+
+Spike A integrates an all-flash **VAST Data** parallel storage cluster engineered
+to deliver ultra-low latency and multi-gigabyte-per-second throughput to saturate
+NVIDIA Blackwell B300 GPU Tensor Cores.
+
+- **High-throughput parallel I/O:** Built on Disaggregated Shared-Everything (DASE)
+  architecture, VAST Data provides simultaneous parallel file access across
+  distributed Blackwell compute nodes without metadata server contention.
+- **Protocol support:** Supports both multi-protocol NFSv3/v4 mounts and S3-compatible
+  object endpoints for fast dataset loading and checkpointing.
+- **Workload mounting:** Configured within Run:AI as a dedicated project persistent
+  volume claim (PVC) mounted into workloads at `/data` or `/vast`.
+- **Optimal data formats:** For maximum training throughput, structure large datasets
+  in chunked container formats (e.g. WebDataset, Sharded Parquet, or TFRecord) to
+  leverage parallel NVMe read streams.
+
+Before staging multi-terabyte datasets, coordinate with your SCC technical liaison
+to verify target volume quotas and establish the fastest network transfer path.
+
+  </TabItem>
+</Tabs>
 
 ## External cloud storage
 
