@@ -11,7 +11,9 @@ sensitivity: public
 
 import DocMeta from '../../../../../components/DocMeta.astro';
 import NextSteps from '../../../../../components/NextSteps.astro';
+import ScreenshotFigure from '../../../../../components/ScreenshotFigure.astro';
 import PythonArrayTypes from '../../../../../assets/synchronization/numpy-array-vs-list.png';
+import PythonArrayTypesWebp from '../../../../../assets/synchronization/numpy-array-vs-list.webp';
 
 <DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
 
@@ -312,7 +314,12 @@ Interpretation, rather than strict definition enforcement which is expected duri
 However, interpretation comes at the cost of efficiency loss caused by both synchronization and type re-interpretation when switching context from one package type to another package type.
 As an example why re-interpretation is necessary, we hereby show both the Python ***List*** and Numpy ***ndarray*** datatypes (derived from [Using Scientific Python Packages (NumPy, Pandas and more)](https://rse.shef.ac.uk/pando-python/instructor/optimisation-numpy.html)):
 
-<img src={PythonArrayTypes} alt="Data structure difference between the Python List and Numpy ndarray datatypes." />
+<ScreenshotFigure
+  src={PythonArrayTypes.src}
+  webp={PythonArrayTypesWebp.src}
+  alt="Data structure difference between the Python List and Numpy ndarray datatypes."
+  caption="Data structure difference between the Python List and Numpy ndarray datatypes."
+/>
 
 Both datatypes each have their own niche strengths and weaknesses.
 Inserts are much cheaper in the Python List structure since copying is not necessary.

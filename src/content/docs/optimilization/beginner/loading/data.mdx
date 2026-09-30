@@ -11,8 +11,11 @@ sensitivity: public
 
 import DocMeta from '../../../../../components/DocMeta.astro';
 import NextSteps from '../../../../../components/NextSteps.astro';
+import ScreenshotFigure from '../../../../../components/ScreenshotFigure.astro';
 import NaiveTimeComplexity from '../../../../../assets/dataloading/naive.png';
+import NaiveTimeComplexityWebp from '../../../../../assets/dataloading/naive.webp';
 import OptimizedTimeComplexity from '../../../../../assets/dataloading/optimized.png';
+import OptimizedTimeComplexityWebp from '../../../../../assets/dataloading/optimized.webp';
 
 <DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
 
@@ -74,7 +77,12 @@ train_batch = next(iter(train_dataloader))
 test_batch = next(iter(test_dataloader))
 ```
 
-<img src={NaiveTimeComplexity} alt="Time complexity of data loading when naively executing loading, transformation, synchronization, and supply in sequence." />
+<ScreenshotFigure
+  src={NaiveTimeComplexity.src}
+  webp={NaiveTimeComplexityWebp.src}
+  alt="Time complexity of data loading when naively executing loading, transformation, synchronization, and supply in sequence."
+  caption="Time complexity of data loading when naively executing loading, transformation, synchronization, and supply in sequence."
+/>
 
 In the naive sequential implementation like the one above, while loading is taking place, your graph is sitting idle. 
 Conversely, while your graph is training, the loader is sitting idle. 
@@ -106,7 +114,12 @@ When num_workers is set, multiple processes simultaneously load and transform ba
 Provided that the prefetch queue size is tuned effectively, the time for loading and transforming a particular batch on average decreases.
 The effect this has on time complexity can be found inside the image below (please be advised that map refers to applying a transformation in parallel):
 
-<img src={OptimizedTimeComplexity} alt="Time complexity of data loading with optimized loading, transformation, synchronization, and supply pipelined and parallelized." />
+<ScreenshotFigure
+  src={OptimizedTimeComplexity.src}
+  webp={OptimizedTimeComplexityWebp.src}
+  alt="Time complexity of data loading with optimized loading, transformation, synchronization, and supply pipelined and parallelized."
+  caption="Time complexity of data loading with optimized loading, transformation, synchronization, and supply pipelined and parallelized."
+/>
 
 Configuration options can be added to the DataLoader class when instantiating the DataLoader object.
 The DataLoader object can subsequently be used inside a training loop where the computation graph is used for parameter training and gathering performance metric values.

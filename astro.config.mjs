@@ -88,6 +88,7 @@ export default defineConfig({
               label: 'Beginner',
               items: [
                 { slug: 'optimilization/beginner/loading/data', label: 'Efficient data loading' },
+				{ slug: 'optimilization/beginner/settings/data', label: 'Typical layer and function settings' },
                 { slug: 'optimilization/beginner/synchronization/data', label: 'CPU and GPU synchronization' },
                 { slug: 'optimilization/beginner/contraction/data', label: 'Tensor contractions' },
                 { slug: 'optimilization/beginner/fractioning/data', label: 'Workload fractioning' },
@@ -98,6 +99,8 @@ export default defineConfig({
               items: [
                 { slug: 'optimilization/advanced/loading/data', label: 'Advanced data loading' },
                 { slug: 'optimilization/advanced/distribution/data', label: 'Distributed graph operations' },
+				{ slug: 'optimilization/advanced/mixed-precision/data', label: 'Mixed-precision calculation' },
+				{ slug: 'optimilization/advanced/operations/data', label: 'Custom tensor framework operations' },
               ],
             },
           ],

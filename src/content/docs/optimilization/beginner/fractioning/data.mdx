@@ -11,7 +11,9 @@ sensitivity: public
 
 import DocMeta from '../../../../../components/DocMeta.astro';
 import NextSteps from '../../../../../components/NextSteps.astro';
+import ScreenshotFigure from '../../../../../components/ScreenshotFigure.astro';
 import FractioningConfig from '../../../../../assets/fractioning/fraction-config-runai-user-interface.png';
+import FractioningConfigWebp from '../../../../../assets/fractioning/fraction-config-runai-user-interface.webp';
 
 <DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
 
@@ -44,7 +46,12 @@ Therefore, fractioning prevents a lot of resource over-provisioning as a result 
 
 ## Configuring a GPU fraction in the Run:ai user interface
 
-<img src={FractioningConfig} alt="Compute resources element in the Run:ai workload submit interface in which GPU fractioning has been enabled for a single GPU device." />
+<ScreenshotFigure
+  src={FractioningConfig.src}
+  webp={FractioningConfigWebp.src}
+  alt="Compute resources element in the Run:ai workload submit interface in which GPU fractioning has been enabled for a single GPU device."
+  caption="Compute resources element in the Run:ai workload submit interface in which GPU fractioning has been enabled for a single GPU device."
+/>
 
 ## Configuring a GPU fraction in the Run:ai command-line interface
 

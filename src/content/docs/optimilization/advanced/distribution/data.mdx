@@ -11,10 +11,15 @@ sensitivity: public
 
 import DocMeta from '../../../../../components/DocMeta.astro';
 import NextSteps from '../../../../../components/NextSteps.astro';
+import ScreenshotFigure from '../../../../../components/ScreenshotFigure.astro';
 import StandardConfig from '../../../../../assets/distribution/select_standard.png';
+import StandardConfigWebp from '../../../../../assets/distribution/select_standard.webp';
 import MultiGpuConfig from '../../../../../assets/distribution/select_multiple_gpus.png';
+import MultiGpuConfigWebp from '../../../../../assets/distribution/select_multiple_gpus.webp';
 import DistConfig from '../../../../../assets/distribution/select_distributed.png';
+import DistConfigWebp from '../../../../../assets/distribution/select_distributed.webp';
 import MultiGpuElasticConfig from '../../../../../assets/distribution/select_multiple_gpus_elastically.png';
+import MultiGpuElasticConfigWebp from '../../../../../assets/distribution/select_multiple_gpus_elastically.webp';
 
 <DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
 
@@ -870,11 +875,21 @@ if __name__ == '__main__':
 
 ### Run:ai user interface standard training configuration
 
-<img src={StandardConfig} alt="Workload architecture element in the Run:ai workload submit interface in which a standard (single-node non-elastic) configuration has been enabled." />
+<ScreenshotFigure
+  src={StandardConfig.src}
+  webp={StandardConfigWebp.src}
+  alt="Workload architecture element in the Run:ai workload submit interface in which a standard (single-node non-elastic) configuration has been enabled."
+  caption="Workload architecture element in the Run:ai workload submit interface in which a standard (single-node non-elastic) configuration has been enabled."
+/>
 
 ### Run:ai user interface configuration of multiple GPUs
 
-<img src={MultiGpuConfig} alt="Compute resources element in the Run:ai workload submit interface in which multiple GPUs have been enabled." />
+<ScreenshotFigure
+  src={MultiGpuConfig.src}
+  webp={MultiGpuConfigWebp.src}
+  alt="Compute resources element in the Run:ai workload submit interface in which multiple GPUs have been enabled."
+  caption="Compute resources element in the Run:ai workload submit interface in which multiple GPUs have been enabled."
+/>
 
 ### Run:ai command-line interface
 
@@ -907,11 +922,21 @@ Additionally, when there is no need for inter-process synchronization (typically
 
 ### Run:ai user interface distributed training configuration
 
-<img src={DistConfig} alt="Workload architecture element in the Run:ai workload submit interface in which a distributed (elastic and or master-less) configuration has been enabled." />
+<ScreenshotFigure
+  src={DistConfig.src}
+  webp={DistConfigWebp.src}
+  alt="Workload architecture element in the Run:ai workload submit interface in which a distributed (elastic and or master-less) configuration has been enabled."
+  caption="Workload architecture element in the Run:ai workload submit interface in which a distributed (elastic and or master-less) configuration has been enabled."
+/>
 
 ### Run:ai user interface distributed training elastic configuration of multiple GPUs
 
-<img src={MultiGpuElasticConfig} alt="Compute resources element in the Run:ai workload submit interface in which multiple workers have been enabled. The workers each have an attached GPU and the workload is allowed to scale elastically." />
+<ScreenshotFigure
+  src={MultiGpuElasticConfig.src}
+  webp={MultiGpuElasticConfigWebp.src}
+  alt="Compute resources element in the Run:ai workload submit interface in which multiple workers have been enabled. The workers each have an attached GPU and the workload is allowed to scale elastically."
+  caption="Compute resources element in the Run:ai workload submit interface in which multiple workers have been enabled. The workers each have an attached GPU and the workload is allowed to scale elastically."
+/>
 
 ### Run:ai command-line interface distributed training configuration
 
