@@ -23,11 +23,12 @@ export default defineConfig({
         Head: './src/components/Head.astro',
       },
       sidebar: [
+        { label: 'Platform overview & tracks', link: '/' },
         {
           label: 'Getting started',
           items: [
-            { slug: 'start-here' },
-            { slug: 'start-here/intake' },
+            { slug: 'start-here', label: 'Platform overview & scope' },
+            { slug: 'start-here/intake', label: 'Access & intake process' },
             { slug: 'start-here/data-classification' },
             { slug: 'start-here/essential-practices' },
             { slug: 'start-here/monitoring-and-profiling' },

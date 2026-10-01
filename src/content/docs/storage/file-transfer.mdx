@@ -11,6 +11,7 @@ sensitivity: public
 ---
 
 import NextSteps from '../../../components/NextSteps.astro';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Choose the transfer path based on where the data starts and how long it must
 live. You do not need to copy data through your laptop when the workload can
@@ -21,7 +22,7 @@ download it directly.
 | Public internet | Download from inside the running workload | The path you choose, normally a PVC such as `/data` |
 | S3-compatible object storage | Use an S3 client from inside the workload | The bucket, or a PVC after an explicit sync |
 | Your laptop or workstation | Use the SSH-container and `scp` | The mounted PVC, not the image filesystem |
-| Snellius or another SSH-accessible system | Pull with `rsync` from an SSH-enabled Spike workspace | The mounted PVC |
+| Remote server or Snellius (Spike 1) | Pull with `rsync` from an SSH-enabled Spike workspace | The mounted PVC |
 | Temporary intermediate files | Use the container filesystem or an ephemeral volume | Disposable; keep no unique copy there |
 
 ## Download directly from the internet
@@ -154,7 +155,10 @@ Keep the forwarding terminal open during SSH or SCP. Use `scp` for deliberate
 transfers; for large datasets prefer a direct internet download or S3 sync
 from inside the workload.
 
-## Transfer from Snellius with `rsync`
+## Transfer from a remote server with `rsync`
+
+<Tabs syncKey="platform">
+  <TabItem label="Researchers (Spike 1)">
 
 Use `rsync` when the source is Snellius or another system that accepts your SSH
 login and the transfer route has been agreed during onboarding. Run the command
@@ -199,6 +203,46 @@ Never place a Snellius password or private key in the image. Use your normal SSH
 authentication and ask your SCC AI Engineer if the direct route, remote host
 key, or [data-classification decision](/start-here/data-classification/) is
 unclear.
+
+  </TabItem>
+  <TabItem label="Companies (Spike A)">
+
+:::note[Commercial Infrastructure Scope]
+Supercomputing Brabant (Spike A) projects operate on dedicated commercial infrastructure and do not connect to national academic facilities such as Snellius. Commercial transfers pull directly from your corporate servers, enterprise storage, or cloud object storage over the secure TU/e VPN.
+:::
+
+#### Transfer from corporate servers via SSH/rsync
+
+Run the transfer command inside a running Spike A workspace connected to the TU/e VPN, with your VAST Data volume mounted at `/data`:
+
+```bash
+runai workspace bash WORKSPACE_NAME --project PROJECT_NAME
+```
+
+Pull from your corporate file server:
+
+```bash
+mkdir -p /data/datasets
+rsync -a \
+  --info=progress2 \
+  --partial \
+  --partial-dir=.rsync-partial \
+  company-user@company-data-host.corp:REMOTE_DIRECTORY/ \
+  /data/datasets/
+```
+
+#### Sync directly from corporate cloud object storage (S3)
+
+For large datasets residing in cloud buckets (e.g., AWS S3, Azure Blob, or Google Cloud Storage), use the S3 CLI directly inside your workload or workspace to stream data directly into the VAST Data parallel filesystem:
+
+```bash
+aws s3 sync s3://company-dataset-bucket/path/ /data/datasets/
+```
+
+Before staging multi-terabyte datasets, coordinate with your Supercomputing Brabant (SCB) Engineer to establish optimal network routes and verify VAST parallel I/O throughput.
+
+  </TabItem>
+</Tabs>
 
 ## Where the files go
 

@@ -12,6 +12,10 @@ sensitivity: public
 
 import NextSteps from '../../../components/NextSteps.astro';
 
+:::note[Spike 1 Academic Service Only]
+The shared LLM gateway is an experimental service operated by the TU/e Supercomputing Center (SCC) exclusively for Spike 1 academic researchers. **Supercomputing Brabant (Spike A) does not provide a managed LLM gateway.** Commercial partner teams deploy, optimize, and run their own dedicated inference stacks (e.g. TensorRT-LLM, vLLM) directly on their contracted Blackwell B300 nodes.
+:::
+
 The current Spike LLM hosting service exposes SCC-managed models through one
 OpenAI-compatible gateway. Researchers call the models from code or an approved
 client; SCC AI Engineers operate the underlying Run:ai and vLLM deployments.

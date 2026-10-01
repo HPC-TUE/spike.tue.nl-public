@@ -70,16 +70,17 @@ Following the initial exploration, a technical alignment session is convened wit
 
 - The **Business Developer** (Supercomputing Brabant)
 - The **Project Manager**
-- An **SCC AI Engineer**
+- A **Supercomputing Brabant (SCB) Engineer**
 - A **Data Steward** (evaluating compliance, data sensitivity, and governance)
 
-During this session, the team conducts an in-depth assessment across five pillars:
+During this session, the team conducts an in-depth assessment across six pillars:
 
 - **Technical feasibility & compute:** Suitability for NVIDIA Blackwell B300 GPU acceleration, memory requirements, and Run:AI scheduling presets;
 - **Storage architecture:** Total all-flash VAST Data NVMe capacity needed, parallel ingestion throughput, and protocol requirements (multi-protocol NFS or S3-compatible endpoints);
 - **Software stack:** Framework compatibility (PyTorch 2.5+, TensorRT-LLM, Megatron-LM), CUDA 12.8+ compiler flags, and rootless Podman container readiness;
 - **Data sensitivity & privacy:** Evaluation of data classification by the Data Steward to identify any special handling, anonymization, or regulatory requirements;
-- **Security and IP protection:** Clear boundaries ensuring your proprietary models, weights, datasets, and intellectual property remain strictly company-isolated.
+- **Security and IP protection:** Clear boundaries ensuring your proprietary models, weights, datasets, and intellectual property remain strictly company-isolated;
+- **Authorized user list:** Upfront agreement on the finalized list of company engineers requiring access, ensuring TU/e Non-Payroll (NOP) account registration can proceed without delay.
 
 ### 3. Go / No-Go decision
 
@@ -102,7 +103,7 @@ Technical onboarding and account creation proceed **only** once both the **Busin
 
 External commercial partner engineers connect to the Spike infrastructure via the TU/e network and VPN using TU/e Non-Payroll accounts (**NOP accounts**, also known as *Nopper* accounts).
 
-While agreements are being finalized, each company engineer requiring access completes the **User Account Registration Form**:
+While agreements are being finalized, each company engineer from the finalized authorization list completes the **User Account Registration Form**:
 
 #### Required user information
 - **Full name**
@@ -127,12 +128,12 @@ While agreements are being finalized, each company engineer requiring access com
 
 Once agreements are executed and NOP accounts are active, project realization begins:
 
-1. **Infrastructure provisioning:** An SCC AI engineer configures:
+1. **Infrastructure provisioning:** An SCB engineer configures:
    - Your isolated commercial **Run:AI project** with contracted Blackwell B300 quotas;
    - High-throughput **VAST Data** parallel storage volumes mounted at `/data` or `/vast`;
    - Your private, company-isolated **Harbor** container registry project.
-2. **Hands-on onboarding session:** An SCC AI engineer leads a working session with your technical team to verify VPN connectivity, test Podman container builds and image pushes, validate VAST storage I/O, and launch your first workloads on Blackwell B300 nodes.
-3. **Ongoing realization support:** Your team maintains direct, intimate collaboration with dedicated SCC AI engineers throughout project execution to fine-tune distributed performance and maximize GPU utilization.
+2. **Hands-on onboarding session:** An SCB engineer leads a working session with your technical team to verify VPN connectivity, test Podman container builds and image pushes, validate VAST storage I/O, and launch your first workloads on Blackwell B300 nodes.
+3. **Ongoing realization support:** Your team maintains direct, intimate collaboration with dedicated Supercomputing Brabant (SCB) engineers throughout project execution to fine-tune distributed performance and maximize GPU utilization.
 
   </TabItem>
 </Tabs>

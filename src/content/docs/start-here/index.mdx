@@ -14,10 +14,24 @@ import NextSteps from '../../../components/NextSteps.astro';
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Spike is not a self-service cluster where an account is created immediately
-after a form is submitted. Access starts with a conversation. The
-Supercomputing Center (SCC) first looks at the project, the workload, and the
-available capacity. If Spike is the right platform and space is available, an
-AI engineer will onboard you personally.
+after a form is submitted. Access starts with a conversation. For TU/e academic
+research (Spike 1), the Supercomputing Center (SCC) reviews the project and capacity.
+For commercial and enterprise computing (Spike A), Supercomputing Brabant (SCB)
+guides the intake and onboarding. In both tracks, an assigned engineer onboards you personally.
+
+## Service scope and platform applicability
+
+Before starting, identify which platform track applies to your project:
+
+| Capability / Service | Spike 1 (TU/e Academic Research) | Spike A (Supercomputing Brabant Commercial) |
+| :--- | :--- | :--- |
+| **Target audience** | TU/e researchers, postdocs, PhDs, students | Commercial enterprises, industry R&D teams |
+| **Compute hardware** | Dedicated DGX B200 nodes (8x B200 GPUs) | Dedicated DGX B300 nodes (8x B300 GPUs, 256 cores, 2.3 TB RAM) |
+| **Parallel storage** | 250 TiB DDN project space with S3 option | All-flash VAST Data NVMe parallel cluster (`/data` or `/vast`) |
+| **Engineering support** | TU/e Supercomputing Center (SCC) AI Engineers | Supercomputing Brabant (SCB) Engineers |
+| **Hosted LLM gateway** | Available (hosted frontier models) | Not provided (companies deploy custom inference/models) |
+| **Remote data transfer** | TU/e network shares, NetApp, Snellius (SURF), S3 | Corporate on-prem, cloud storage (AWS/Azure/GCP) over VPN |
+| **Onboarding route** | TopDesk Service Desk request | Supercomputing Brabant business development & dual-gate intake |
 
 ## The route onto Spike
 
@@ -50,16 +64,20 @@ AI engineer will onboard you personally.
 1. **Exploration & use-case intake.** Contact **Niels te Poel** (`ntepoel@bom.nl`),
    Business Developer for Supercomputing Brabant, to explore your AI challenge,
    define project scope, and establish an NDA where needed.
-2. **Technical & data intake.** Meet with the Project Manager, SCC AI Engineer,
+2. **Technical & data intake.** Meet with the Project Manager, Supercomputing Brabant (SCB) Engineer,
    and Data Steward to evaluate feasibility, Blackwell B300 compute needs,
-   VAST Data storage, security, privacy, and IP protection.
+   VAST Data storage, security, privacy, IP protection, and finalize the list of authorized users.
 3. **Go / No-Go decision & contracting.** Leadership issues formal approval to proceed
    on Spike A; execute the commercial SLA and Data Processing Agreement (DPA, if required).
 4. **TU/e NOP account registration.** Team members submit the User Account
    Registration Form to obtain external TU/e NOP accounts (*Noppers*) for secure VPN access.
-5. **Onboarding & project realization.** An SCC AI engineer provisions your Run:AI
+5. **Onboarding & project realization.** An SCB engineer provisions your Run:AI
    project and VAST storage, followed by a dedicated session to launch your first
    container workloads on Blackwell B300 GPUs.
+
+:::tip[Detailed Intake Guide]
+For the complete 6-stage commercial lifecycle, NDA requirements, NOP form fields, and dual-gate approval criteria, see the [Access & intake process guide](/start-here/intake/).
+:::
 
   </TabItem>
 </Tabs>
@@ -69,6 +87,9 @@ AI engineer will onboard you personally.
 The onboarding session teaches you how to work on Spike; it is not an
 introduction to machine learning, Linux, Python, or your research software.
 Before applying, have:
+
+<Tabs syncKey="platform">
+  <TabItem label="Researchers (Spike 1)">
 
 1. **Code that is close to runnable on HPC.** It does not need to be packaged
    perfectly for Spike yet, but it should not still require weeks of development
@@ -90,6 +111,33 @@ otherwise working environment into the Spike workflow.
 The [Access and intake](/start-here/intake/) guide explains what makes a strong
 request, how SCC assesses fit, and what to prepare for the intake and onboarding
 sessions.
+
+  </TabItem>
+  <TabItem label="Companies (Spike A)">
+
+1. **Code that is close to runnable on HPC.** It does not need to be packaged
+   perfectly for Spike yet, but it should not still require weeks of development
+   before a meaningful test can run. SCB understands that moving into containers
+   and onto Blackwell B300 GPUs takes some adjustment.
+2. **An estimate of the dataset size.** The data should be ready to transfer, and
+   you should know roughly how much needs to move onto the platform.
+3. **A project name.** Use one name consistently across commercial agreements and
+   technical onboarding.
+4. **Finalized list of authorized users upfront.** Identify all company engineers who
+   need cluster access before account onboarding begins so TU/e NOP account registration
+   and security screening can start without delay.
+5. **A documented data decision.** Complete data classification, sensitivity review,
+   and IP boundary alignment with the SCB team before transfer.
+
+You should also understand your own code and be comfortable working from a
+terminal. Container experience is helpful, but SCB engineers can help translate an
+otherwise working environment into the Spike A workflow.
+
+The [Access & intake process](/start-here/intake/) guide explains what to prepare
+for the technical intake and onboarding sessions.
+
+  </TabItem>
+</Tabs>
 
 ## Once you are onboarded
 
