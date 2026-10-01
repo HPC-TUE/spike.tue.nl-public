@@ -211,7 +211,7 @@ unclear.
 Supercomputing Brabant (Spike A) projects operate on dedicated commercial infrastructure and do not connect to national academic facilities such as Snellius. Commercial transfers pull directly from your corporate servers, enterprise storage, or cloud object storage over the secure TU/e VPN.
 :::
 
-#### Transfer from corporate servers via SSH/rsync
+### Transfer from corporate servers via SSH/rsync
 
 Run the transfer command inside a running Spike A workspace connected to the TU/e VPN, with your VAST Data volume mounted at `/data`:
 
@@ -231,7 +231,7 @@ rsync -a \
   /data/datasets/
 ```
 
-#### Sync directly from corporate cloud object storage (S3)
+### Sync directly from corporate cloud object storage (S3)
 
 For large datasets residing in cloud buckets (e.g., AWS S3, Azure Blob, or Google Cloud Storage), use the S3 CLI directly inside your workload or workspace to stream data directly into the VAST Data parallel filesystem:
 
