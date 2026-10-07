@@ -11,6 +11,21 @@ sensitivity: public
 
 import DocMeta from '../../../../../components/DocMeta.astro';
 import NextSteps from '../../../../../components/NextSteps.astro';
+import ScreenshotFigure from '../../../../../components/ScreenshotFigure.astro';
+import Slide1 from '../../../../../assets/dataloading/qcg-pilotjob-inferencing-example/Slide1.PNG';
+import Slide1Webp from '../../../../../assets/dataloading/qcg-pilotjob-inferencing-example/Slide1.webp';
+import Slide2 from '../../../../../assets/dataloading/qcg-pilotjob-inferencing-example/Slide2.PNG';
+import Slide2Webp from '../../../../../assets/dataloading/qcg-pilotjob-inferencing-example/Slide2.webp';
+import Slide3 from '../../../../../assets/dataloading/qcg-pilotjob-inferencing-example/Slide3.PNG';
+import Slide3Webp from '../../../../../assets/dataloading/qcg-pilotjob-inferencing-example/Slide3.webp';
+import Slide4 from '../../../../../assets/dataloading/qcg-pilotjob-inferencing-example/Slide4.PNG';
+import Slide4Webp from '../../../../../assets/dataloading/qcg-pilotjob-inferencing-example/Slide4.webp';
+import Slide5 from '../../../../../assets/dataloading/qcg-pilotjob-inferencing-example/Slide5.PNG';
+import Slide5Webp from '../../../../../assets/dataloading/qcg-pilotjob-inferencing-example/Slide5.webp';
+import Slide6 from '../../../../../assets/dataloading/qcg-pilotjob-inferencing-example/Slide6.PNG';
+import Slide6Webp from '../../../../../assets/dataloading/qcg-pilotjob-inferencing-example/Slide6.webp';
+import Slide7 from '../../../../../assets/dataloading/qcg-pilotjob-inferencing-example/Slide7.PNG';
+import Slide7Webp from '../../../../../assets/dataloading/qcg-pilotjob-inferencing-example/Slide7.webp';
 
 <DocMeta maturity="Verified" lastVerified="2026-07-21" audience="Researchers" products={['Run:ai']} />
 
@@ -248,7 +263,55 @@ pipeline = build_pipeline(pipeline_config)
 An inferencing example involving direct downloading from Youtube is hereby included as well.
 Rather than using SPDL pipelining, the inferencing example relies on a combination of sub-processes.
 Sub-processes include async I/O downloading, a file watchdog, and a node allocation local scheduling system implemented with QCG-PilotJob.
-PLACEHOLDER: LINK TO PRESENTATION FILE AT assets/dataloading/presentation_async_qcg_inference.pdf
+
+<ScreenshotFigure
+  src={Slide1.src}
+  webp={Slide1Webp.src}
+  alt="Inferencing example involving direct downloading from Youtube slide 1."
+  caption="Inferencing example involving direct downloading from Youtube slide 1."
+/>
+
+<ScreenshotFigure
+  src={Slide2.src}
+  webp={Slide2Webp.src}
+  alt="Inferencing example involving direct downloading from Youtube slide 2."
+  caption="Inferencing example involving direct downloading from Youtube slide 2."
+/>
+
+<ScreenshotFigure
+  src={Slide3.src}
+  webp={Slide3Webp.src}
+  alt="Inferencing example involving direct downloading from Youtube slide 3."
+  caption="Inferencing example involving direct downloading from Youtube slide 3."
+/>
+
+<ScreenshotFigure
+  src={Slide4.src}
+  webp={Slide4Webp.src}
+  alt="Inferencing example involving direct downloading from Youtube slide 4."
+  caption="Inferencing example involving direct downloading from Youtube slide 4."
+/>
+
+<ScreenshotFigure
+  src={Slide5.src}
+  webp={Slide5Webp.src}
+  alt="Inferencing example involving direct downloading from Youtube slide 5."
+  caption="Inferencing example involving direct downloading from Youtube slide 5."
+/>
+
+<ScreenshotFigure
+  src={Slide6.src}
+  webp={Slide6Webp.src}
+  alt="Inferencing example involving direct downloading from Youtube slide 6."
+  caption="Inferencing example involving direct downloading from Youtube slide 6."
+/>
+
+<ScreenshotFigure
+  src={Slide7.src}
+  webp={Slide7Webp.src}
+  alt="Inferencing example involving direct downloading from Youtube slide 7."
+  caption="Inferencing example involving direct downloading from Youtube slide 7."
+/>
 
 ## Interconnect transfer latency from CPU to GPU dominates over computational complexity
 
