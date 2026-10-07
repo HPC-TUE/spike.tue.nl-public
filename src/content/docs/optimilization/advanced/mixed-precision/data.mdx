@@ -20,7 +20,7 @@ Together with increasing dataset sizes, the less stringent inductive bias allows
 This shifts the scaling ceiling from parameter fit in the context of dataset size and task to the speed at which parameters can be trained effectively.
 The speed is controlled by a set of factors including, but not limited to, 1) available vRAM, 2) accelerator ratio, and 3) peak T(FL)OPS accelerators can provide at a particular timestamp.
 These factors, including how processing of parameters and tensor operations at different levels of precision influences these factors, take main stage in this knowledge article.
-For the examples in the following subsections, we assume you are familiar with the simple model training example in [Beginner -> CPU and GPU synchronization](optimilization/beginner/synchronization/data).
+For the examples in the following subsections, we assume you are familiar with the simple model training example in [Beginner -> CPU and GPU synchronization](../../../../../optimilization/beginner/synchronization/data).
 In the example, a dataset/dataloader is responsible for copying MNIST dataset batches to RAM, the Module object and batches are synchronized onto a device by means of the ***Module.to(device)*** and ***Tensor.to(device)*** methods, and module parameters are trained.
 
 ## Configuration of different graph operators at varying precisions

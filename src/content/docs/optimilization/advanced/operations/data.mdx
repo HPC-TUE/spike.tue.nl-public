@@ -71,7 +71,7 @@ For more information regarding known combinations of forward and partial derivat
 ## Configuring (bind) settings
 
 For configuring bind settings, we take the mixed-precision 4-bit floating-point example for a PyTorch ***torch.matmul*** function.
-For more information regarding mixed-precision training, we refer to [Advanced -> Mixed-precision calculation](optimilization/advanced/mixed-precision/data).
+For more information regarding mixed-precision training, we refer to [Advanced -> Mixed-precision calculation](../../../../../optimilization/advanced/mixed-precision/data).
 In addition to the forward gemm kernel and partial gradient kernels, mixed-precision operations also require [quantization](https://docs.pytorch.org/ao/main/workflows/training.html#quantized-training).
 Quantization of the considered datatype is used to keep layers and functions operable with other layers and functions.
 We assume that the gemm, backward gradients, and quantization kernels / launch functions have been saved in the following files: gemm.cu, grad.cu, quantize.cu.
